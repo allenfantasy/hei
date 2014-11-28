@@ -64,17 +64,50 @@ Makefile
 
 对于在开发过程中在本地浏览器进行快速测试，使用以下步骤，来完成编译资源和测试的流水线工作：
 
-* 在命令行中：
+### 不涉及 Cordova 的 Native API 的情况下
+
+在命令行中：
+
+  ```shell
+  $ grunt serve # 启动 web 服务并实时更新开发代码，在 `http://localhost:1337` 中查看
   ```
-  $ grunt devwatch # Recompile all assets and watch it
-  $ grunt serve # Start ripple. Check it on http://localhost:1337/
-  ```
-* 在 `src/` 文件夹中进行开发，每次保存代码文件时，代码文件将被重新编译到 `www/` 文件夹中
-* 刷新浏览器中的标签页，但注意不要用`Cmd+R`，将光标 focus 到地址栏中按回车键刷新
+
+### 涉及 Cordova 的 Native API 的情况
+
+TODO
 
 ### 技巧
 
 * 典型的开发流程是在本地利用 ripple 进行开发，使用模拟器进行测试，最后在真机上测试。*必须* 要在发布应用前在真机上进行测试。
+
+#### 使用Genymotion运行Cordova应用
+
+1. 在 Genymotion 上安装 Android 虚拟机（注意版本要是4.4.2的）
+2. 设置 Genymotion 的 ADB 为刚才安装Android SDK的路径
+3. `adb devices`，正确的话应该是这样【TODO：来个图呗】
+4. 打开刚才安装好的虚拟机
+5. `cordova run android`，看到 LAUNCH SUCCESS 就对了
+
+#### Android设备真机运行
+
+1. 下载 [android file transfer package](https://www.android.com/filetransfer/) 并安装
+2. 手机开启开发者模式，允许 USB 调试
+3. 将手机通过 USB 接入，在手机弹出提示是否允许 USB 调试时（会有 RSA 密钥指纹），点击“确定”
+4. 在命令行中执行 `adb devices`，应该能看到（以下的设备号在实际操作时会不同，但长度应该一致）：
+```
+List of devices attached
+Y5AES89TCyL7RSLB       device
+```
+5. 然后在命令行执行 `cordova run android --device`，将生成好的 apk 安装到手机上运行
+6. 如果一直出现`INSTALL_CANCELLED_BY_USER`的错误，那一定是……手机锁屏的缘故……
+
+#### cordova emulate ios 黑屏
+
+[TODO]
+
+1. open Xcode
+2. launch the simulator from Xcode
+3. `cordova emulate ios` in terminal
 
 ### gotchas
 
