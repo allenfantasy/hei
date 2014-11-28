@@ -7,9 +7,11 @@ FlexibleLayout = require 'famous/views/FlexibleLayout'
 
 Page = require '../lib/page.coffee'
 
+util = require '../lib/util.coffee'
+
 homepage = new Page(
   name: 'homepage'
-) 
+)
 
 container = new ContainerSurface(
   size: [window.innerWidth, window.innerHeight]
@@ -22,19 +24,44 @@ itemList = new Scrollview()
 # Size Constants
 IPHONE_FIVE_SIZE = [720, 1280]
 
-itemNetHeightRatio = 145 / IPHONE_FIVE_SIZE[1]
-itemBorderWidth = 2
-itemDateSectionWidthRatio = 146 / IPHONE_FIVE_SIZE[0]
-itemButtonSectionWidthRatio = 90 / IPHONE_FIVE_SIZE[0]
-itemNameSectionWidthRatio = 1 - itemDateSectionWidthRatio - itemButtonSectionWidthRatio
+itemNetHeight = 145 / IPHONE_FIVE_SIZE[1] * window.innerHeight
 
-#Item = (name, time, )
-buildItem = (name, time, isRepeated) ->
-  itemWrapper = new ContainerSurface(
-    size: [undefined, itemNetHeightRatio * window.innerHeight + itemBorderWidth]
+itemDateHeight = itemDateFontSize = 27 / IPHONE_FIVE_SIZE[1] * window.innerHeight
+itemTimeHeight = itemTimeFontSize = 40 / IPHONE_FIVE_SIZE[1] * window.innerHeight
+itemDateTopPadding = 36 / IPHONE_FIVE_SIZE[1] * window.innerHeight
+itemDateSectionWidth = 146 / IPHONE_FIVE_SIZE[0] * window.innerWidth
+
+itemNameFontSize = 40 / IPHONE_FIVE_SIZE[1] * window.innerHeight
+itemNameSectionLeftPadding = 40 / IPHONE_FIVE_SIZE[0] * window.innerWidth
+
+itemBorderWidth = 2
+itemButtonSectionWidth = 90 / IPHONE_FIVE_SIZE[0] * window.innerWidth
+
+itemButtonRadius = 27 / IPHONE_FIVE_SIZE[0] * window.innerWidth
+
+CHINESE_WEEKDAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+
+buildDateHTML = (datetime) ->
+  "<div class='datetime'>" +
+    "<div class='date' style='padding-top:#{itemDateTopPadding}px;height:#{itemDateHeight}px;font-size:#{itemDateFontSize}px;'>" +
+      "#{datetime.getMonth()}.#{datetime.getDate()} #{CHINESE_WEEKDAY_NAMES[datetime.getDay()]}" +
+    "</div>" +
+    "<div class='time' style='height:#{itemTimeHeight}px;font-size:#{itemTimeFontSize}px;'>" + util.formatTime(datetime) + "</div>" +
+  "</div>"
+
+buildCircleButton = (radius, isRepeated) ->
+  new Surface(
+    size: [radius * 2, radius * 2]
     properties:
-      borderBottom: '1px solid gray'
-      lineHeight: '100px'
+      borderRadius: radius + 'px'
+      border: '1px solid #9da9ab'
+  )
+
+buildItem = (name, datetime, scroll, isRepeated) ->
+  itemWrapper = new ContainerSurface(
+    size: [undefined, itemNetHeight + itemBorderWidth]
+    classes: if isRepeated then ['item', 'repeated'] else ['item']
+    properties:
       overflow: 'hidden'
   )
   itemLayout = new FlexibleLayout(
@@ -43,24 +70,35 @@ buildItem = (name, time, isRepeated) ->
   )
 
   timeSection = new Surface(
-    content: time.toDateString()
-    size: [itemDateSectionWidthRatio * window.innerWidth, undefined]
+    content: buildDateHTML datetime
+    size: [itemDateSectionWidth, undefined]
   )
   nameSection = new Surface(
     content: name
-    size: [true, undefined]
+    size: [undefined, undefined]
+    properties:
+      fontSize: itemNameFontSize + 'px'
+      lineHeight: itemNetHeight + 'px'
+      paddingLeft: itemNameSectionLeftPadding + 'px' 
+      fontWeight: 'bolder'
   )
-  buttonSection = new Surface(
-    content: time.toDateString()
-    size: [itemDateSectionWidthRatio * window.innerWidth, undefined]
+  buttonSection = new ContainerSurface(
+    size: [itemButtonSectionWidth, undefined]
   )
-  itemLayout.sequenceFrom([timeSection, nameSection, buttonSection])
-  itemWrapper.add(itemLayout)
+  button = buildCircleButton itemButtonRadius, isRepeated 
+  buttonSection.add(new Modifier(
+    origin: [.5, .5]
+    align: [.5, .5]
+  )).add button
+
+  itemLayout.sequenceFrom [timeSection, nameSection, buttonSection]
+  itemWrapper.add itemLayout
+  itemWrapper.pipe scroll
   itemWrapper
 
-items = ['item1', 'item2', 'item3'].map (name, index) ->
-  buildItem name, new Date(), index % 2 is 0
-  
+items = ['每周论坛', '心理学史期中考', '绝命毒师'].map (name, index) ->
+  buildItem name, new Date(), itemList, index % 2 is 0
+
 itemList.sequenceFrom items
 container.add itemList
 homepage.add container

@@ -1,0 +1,26 @@
+.item {
+  border-bottom: 2px solid @dark-gray;
+  .name {
+    color: @main-gray;
+  }
+  .datetime {
+    text-align: right;
+    // TODO: font-family?
+    .date {
+
+    }
+    .time {
+      font-weight: bolder;
+    }
+  }
+  &.repeated {
+    .datetime {
+      .date {
+        color: @light-gray;
+      }
+      .time {
+        color: @dark-gray;
+      }
+    }
+  }
+}
