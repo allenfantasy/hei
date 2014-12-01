@@ -3,13 +3,10 @@ Transform = require 'famous/core/Transform'
 Surface = require 'famous/core/Surface'
 ImageSurface = require 'famous/surfaces/ImageSurface'
 ContainerSurface = require 'famous/surfaces/ContainerSurface'
-Scrollview = require 'famous/views/Scrollview'
-FlexibleLayout = require 'famous/views/FlexibleLayout'
-HeaderFooterLayout = require 'famous/views/HeaderFooterLayout'
 SequentialLayout = require 'famous/views/SequentialLayout'
 
 Page = require '../lib/page.coffee'
-# Date = require 'date-utils'
+require 'date-utils'
 
 newReminder = new Page(
   name: 'newReminder'
@@ -22,13 +19,7 @@ FONT_SIZE = '20px'
 TRUE_SIZE = [true, true]
 BOX_SHADOW = '0 0 3px #888888'
 
-# today = Date.today()
 today = new Date()
-year = today.getFullYear()
-month = today.getMonth() + 1
-day = today.getDay()
-hour = today.getHours();
-minute = today.getMinutes()
 
 container = new ContainerSurface(
   size: [window.innerWidth, window.innerHeight]
@@ -69,8 +60,16 @@ createSlide = (type) ->
   )
 
   slide = new Surface(
-    content: type
-    size: TRUE_SIZE
+    size: [window.innerWidth - 50, 8]
+    properties:
+      backgroundColor: GREY
+  )
+
+  ball = new Surface(
+    size: [20, 20]
+    properties:
+      borderRadius: '50%'
+      backgroundColor: BLUE
   )
 
   slideContainer.add(new Modifier(
@@ -78,9 +77,14 @@ createSlide = (type) ->
     origin: [0.5, 0.5]
   )).add slide
 
+  slideContainer.add(new Modifier(
+    align: [0.5, 0.5]
+    origin: [0.5, 0.5]
+  )).add ball
+
   return slideContainer
 
-createDate = (date) ->
+createDate = (d) ->
   dateContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
     properties:
@@ -89,7 +93,7 @@ createDate = (date) ->
   )
 
   date = new Surface(
-    content: date
+    content: generateDate(d)
     size: TRUE_SIZE
   )
 
@@ -102,6 +106,14 @@ createDate = (date) ->
     content: '▶'
     size: TRUE_SIZE
   )
+
+  last.on 'click', ->
+    today.addYears(-1)
+    date.setContent(generateDate(today))
+
+  next.on 'click', ->
+    today.addYears(1)
+    date.setContent(generateDate(today))
 
   dateContainer.add(new Modifier(
     align: [0.1, 0.5]
@@ -120,13 +132,24 @@ createDate = (date) ->
 
   return dateContainer
 
-createTime = (time) ->
+generateDate = (d) ->
+  weekName = switch d.toFormat('DDDD')
+    when 'Monday' then '周一'
+    when 'Tuesday' then '周二'
+    when 'Wednesday' then '周三'
+    when 'Thursday' then '周四'
+    when 'Friday' then '周五'
+    when 'Saturday' then '周六'
+    when 'Sunday' then '周日'
+  return d.toYMD('.')+'<span class="week-name">'+weekName+'</span>'
+
+createTime = (t) ->
   timeContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
   )
 
   time = new Surface(
-    content: time
+    content: t.toFormat('HH24:MI')
     size: TRUE_SIZE
     properties:
       fontSize: '30px'
@@ -168,7 +191,6 @@ createFive = (type) ->
 
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
-      console.log(index)
       reminderContent = reminder._imageUrl
       if /off/.test(reminderContent)
         reminderContent = reminderContent.replace(/off/, "on")
@@ -216,10 +238,10 @@ footer = createFooter()
 
 surfaces.push header
 surfaces.push createSlide('月')
-surfaces.push createDate(year+'.'+month+'.'+day)
+surfaces.push createDate(today)
 surfaces.push createSlide('日')
 surfaces.push createSlide('时')
-surfaces.push createTime(hour+':'+minute)
+surfaces.push createTime(today)
 surfaces.push createSlide('分')
 surfaces.push createFive('clock')
 surfaces.push createFive('cycling')

@@ -6,3 +6,7 @@ html {
   -webkit-backface-visibility: visible;
   backface-visibility: visible;
 }
+
+.week-name {
+  font-size: 20px !important
+}
