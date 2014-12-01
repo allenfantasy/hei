@@ -119,7 +119,7 @@ ADD_BUTTON_SIZE = SIZE_CONST.ADD_BUTTON.Size
 # TODO: 加号有点不居中，是因为字体的问题
 addButton = new FloatButton(
   type: 'image'
-  imgsrc: '/img/ic_add_24px.svg'
+  imgsrc: './img/ic_add_24px.svg'
   size: [ADD_BUTTON_SIZE, ADD_BUTTON_SIZE]
   classes: ['add-button', 'md-button', 'md-fab']
   properties:

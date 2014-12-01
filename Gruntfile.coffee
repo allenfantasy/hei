@@ -6,7 +6,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-contrib-cssmin"
   grunt.loadNpmTasks "grunt-contrib-less"
   grunt.loadNpmTasks "grunt-contrib-clean"
-  #grunt.loadNpmTasks "grunt-exec"
+  grunt.loadNpmTasks "grunt-exec"
 
   grunt.initConfig
     clean: ['www/index.js', 'www/index.min.js', 'www/index.css']
@@ -14,6 +14,7 @@ module.exports = (grunt) ->
     exec:
       cordova_build:
         cmd: 'make build-prod' 
+
     connect:
       options:
         port: 1337
