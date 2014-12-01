@@ -79,13 +79,13 @@ buildItem = (name, datetime, scroll, isRepeated) ->
     properties:
       fontSize: itemNameFontSize + 'px'
       lineHeight: itemNetHeight + 'px'
-      paddingLeft: itemNameSectionLeftPadding + 'px' 
+      paddingLeft: itemNameSectionLeftPadding + 'px'
       fontWeight: 'bolder'
   )
   buttonSection = new ContainerSurface(
     size: [itemButtonSectionWidth, undefined]
   )
-  button = buildCircleButton itemButtonRadius, isRepeated 
+  button = buildCircleButton itemButtonRadius, isRepeated
   buttonSection.add(new Modifier(
     origin: [.5, .5]
     align: [.5, .5]
