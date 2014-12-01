@@ -5,22 +5,34 @@
   }
   .datetime {
     text-align: right;
-    // TODO: font-family?
     .date {
-
+      color: @light-gray;
+      .month-day {
+        // TODO: google-font
+      }
     }
     .time {
+      // TODO: google-font
       font-weight: bolder;
+      color: @dark-gray;
     }
   }
   &.repeated {
     .datetime {
       .date {
-        color: @light-gray;
+        color: @light-blue;
       }
       .time {
-        color: @dark-gray;
+        color: @medium-blue;
       }
     }
+  }
+}
+.add-button {
+  background-color: @medium-blue;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.32);
+  &:hover {
+    background-color: @dark-blue;
+    box-shadow: 0 5px 13px rgba(0, 0, 0, 0.5);
   }
 }

@@ -5,3 +5,5 @@ node_modules
 www/index.css
 www/index.js
 www/index.min.js
+
+.DS_Store

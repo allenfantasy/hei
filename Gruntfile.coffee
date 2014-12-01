@@ -11,6 +11,9 @@ module.exports = (grunt) ->
   grunt.initConfig
     clean: ['www/index.js', 'www/index.min.js', 'www/index.css']
 
+    exec:
+      cordova_build:
+        cmd: 'make build-prod' 
     connect:
       options:
         port: 1337
@@ -82,3 +85,5 @@ module.exports = (grunt) ->
       "compile",
       "exec:cordova_build"
     ]
+
+  grunt.registerTask "default", "serve"
