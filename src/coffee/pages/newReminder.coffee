@@ -133,14 +133,14 @@ createDate = (d) ->
   return dateContainer
 
 generateDate = (d) ->
-  weekName = switch d.toFormat('DDDD')
-    when 'Monday' then '周一'
-    when 'Tuesday' then '周二'
-    when 'Wednesday' then '周三'
-    when 'Thursday' then '周四'
-    when 'Friday' then '周五'
-    when 'Saturday' then '周六'
-    when 'Sunday' then '周日'
+  weekName = switch d.toFormat('DDD')
+    when 'Mon' then '周一'
+    when 'Tue' then '周二'
+    when 'Wed' then '周三'
+    when 'Thu' then '周四'
+    when 'Fri' then '周五'
+    when 'Sat' then '周六'
+    when 'Sun' then '周日'
   return d.toYMD('.')+'<span class="week-name">'+weekName+'</span>'
 
 createTime = (t) ->
