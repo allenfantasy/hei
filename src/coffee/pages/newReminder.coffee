@@ -17,6 +17,15 @@ newReminder = new Page(
 BLUE = '#41c4d3'
 GREY = '#9da9ab'
 LINE_HEIGHT = window.innerHeight / 10
+FONT_SIZE = '20px'
+TRUE_SIZE = [true, true]
+
+today = new Date()
+year = today.getFullYear()
+month = today.getMonth() + 1
+day = today.getDay()
+hour = today.getHours();
+minute = today.getMinutes()
 
 container = new ContainerSurface(
   size: [window.innerWidth, window.innerHeight]
@@ -39,6 +48,7 @@ createHeader = (content) ->
     content: content
     properties:
       lineHeight: LINE_HEIGHT + 'px'
+      fontSize: FONT_SIZE
   )
 
   headerContainer.add(new Modifier(
@@ -55,7 +65,7 @@ createSlide = (type) ->
 
   slide = new Surface(
     content: type
-    size: [true, true]
+    size: TRUE_SIZE
   )
 
   slideContainer.add(new Modifier(
@@ -68,21 +78,24 @@ createSlide = (type) ->
 createDate = (date) ->
   dateContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
+    properties:
+      fontSize: '30px'
+      fontWeight: 'bold'
   )
 
   date = new Surface(
     content: date
-    size: [true, true]
+    size: TRUE_SIZE
   )
 
   last = new Surface(
     content: '◀'
-    size: [true, true]
+    size: TRUE_SIZE
   )
 
   next = new Surface(
     content: '▶'
-    size: [true, true]
+    size: TRUE_SIZE
   )
 
   dateContainer.add(new Modifier(
@@ -109,7 +122,10 @@ createTime = (time) ->
 
   time = new Surface(
     content: time
-    size: [true, true]
+    size: TRUE_SIZE
+    properties:
+      fontSize: '30px'
+      fontWeight: 'bold'
   )
 
   timeContainer.add(new Modifier(
@@ -161,12 +177,12 @@ createFive = (type) ->
 createFooter = ->
   cancelButton = new Surface(
     content: '取消'
-    size: [true, true]
+    size: TRUE_SIZE
   )
 
   confirmButton = new Surface(
     content: '确认'
-    size : [true, true]
+    size : TRUE_SIZE
     properties:
       textAlign: 'center'
   )
@@ -174,7 +190,7 @@ createFooter = ->
   footer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
     properties:
-      fontSize: '20px'
+      fontSize: FONT_SIZE
   )
 
   footer.add(new Modifier(
@@ -194,10 +210,10 @@ footer = createFooter()
 
 surfaces.push header
 surfaces.push createSlide('月')
-surfaces.push createDate('2014.12.12')
+surfaces.push createDate(year+'.'+month+'.'+day)
 surfaces.push createSlide('日')
 surfaces.push createSlide('时')
-surfaces.push createTime('12:12')
+surfaces.push createTime(hour+':'+minute)
 surfaces.push createSlide('分')
 surfaces.push createFive('clock')
 surfaces.push createFive('cycling')
