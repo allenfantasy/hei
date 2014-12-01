@@ -14,6 +14,16 @@ newReminder = new Page(
   name: 'newReminder'
 )
 
+BLUE = '#41c4d3'
+GREY = '#9da9ab'
+LINE_HEIGHT = window.innerHeight / 10
+
+container = new ContainerSurface(
+  size: [window.innerWidth, window.innerHeight]
+  properties:
+    color: GREY
+)
+
 layout = new SequentialLayout(
   direction: 1
 )
@@ -21,15 +31,26 @@ layout = new SequentialLayout(
 surfaces = []
 
 createHeader = (content) ->
+  headerContainer = new ContainerSurface(
+    size: [window.innerWidth, LINE_HEIGHT]
+  )
+
   header = new Surface(
     content: content
-    size: [window.innerWidth, 50]
+    properties:
+      lineHeight: LINE_HEIGHT + 'px'
   )
-  return header
+
+  headerContainer.add(new Modifier(
+    align: [0.1, 0.5]
+    origin: [0, 0.5]
+  )).add header
+
+  return headerContainer
 
 createSlide = (type) ->
   slideContainer = new ContainerSurface(
-    size: [window.innerWidth, 50]
+    size: [window.innerWidth, LINE_HEIGHT]
   )
 
   slide = new Surface(
@@ -46,7 +67,7 @@ createSlide = (type) ->
 
 createDate = (date) ->
   dateContainer = new ContainerSurface(
-    size: [window.innerWidth, 100]
+    size: [window.innerWidth, LINE_HEIGHT]
   )
 
   date = new Surface(
@@ -66,7 +87,7 @@ createDate = (date) ->
 
   dateContainer.add(new Modifier(
     align: [0.1, 0.5]
-    origin: [0.5, .5]
+    origin: [0, .5]
   )).add last
 
   dateContainer.add(new Modifier(
@@ -76,14 +97,14 @@ createDate = (date) ->
 
   dateContainer.add(new Modifier(
     align: [0.9, 0.5]
-    origin: [0.5, 0.5]
+    origin: [1, 0.5]
   )).add next
 
   return dateContainer
 
 createTime = (time) ->
   timeContainer = new ContainerSurface(
-    size: [window.innerWidth, 50]
+    size: [window.innerWidth, LINE_HEIGHT]
   )
 
   time = new Surface(
@@ -100,7 +121,7 @@ createTime = (time) ->
 
 createFive = (type) ->
   fiveContainer = new ContainerSurface(
-    size: [innerWidth, 50]
+    size: [innerWidth, LINE_HEIGHT]
   )
   five = new SequentialLayout(
     direction: 0
@@ -127,11 +148,13 @@ createFive = (type) ->
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
       console.log(index)
-      reminderContent = reminder.getContent()
-      console.log(reminder)
-      reminderContent = reminderContent.replace(/off/, '')
-      console.log(reminder)
-      reminder.setContent(reminderContent)
+      reminderContent = reminder._imageUrl
+      if /off/.test(reminderContent)
+        reminderContent = reminderContent.replace(/off/, "on")
+        reminder.setContent reminderContent
+      else
+        reminderContent = reminderContent.replace(/on/, "off")
+        reminder.setContent reminderContent
 
   return fiveContainer
 
@@ -144,10 +167,14 @@ createFooter = ->
   confirmButton = new Surface(
     content: '确认'
     size : [true, true]
+    properties:
+      textAlign: 'center'
   )
 
   footer = new ContainerSurface(
-    size: [window.innerWidth, 100]
+    size: [window.innerWidth, LINE_HEIGHT]
+    properties:
+      fontSize: '20px'
   )
 
   footer.add(new Modifier(
@@ -178,6 +205,11 @@ surfaces.push footer
 
 layout.sequenceFrom surfaces
 
-newReminder.add layout
+container.add(new Modifier(
+  origin: [.5, .5]
+  align: [.5, .5]
+)).add layout
+
+newReminder.add container
 
 module.exports = newReminder
