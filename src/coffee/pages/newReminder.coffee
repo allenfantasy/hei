@@ -9,6 +9,7 @@ HeaderFooterLayout = require 'famous/views/HeaderFooterLayout'
 SequentialLayout = require 'famous/views/SequentialLayout'
 
 Page = require '../lib/page.coffee'
+# Date = require 'date-utils'
 
 newReminder = new Page(
   name: 'newReminder'
@@ -19,7 +20,9 @@ GREY = '#9da9ab'
 LINE_HEIGHT = window.innerHeight / 10
 FONT_SIZE = '20px'
 TRUE_SIZE = [true, true]
+BOX_SHADOW = '0 0 3px #888888'
 
+# today = Date.today()
 today = new Date()
 year = today.getFullYear()
 month = today.getMonth() + 1
@@ -42,6 +45,8 @@ surfaces = []
 createHeader = (content) ->
   headerContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
+    properties:
+      boxShadow: BOX_SHADOW
   )
 
   header = new Surface(
@@ -191,6 +196,7 @@ createFooter = ->
     size: [window.innerWidth, LINE_HEIGHT]
     properties:
       fontSize: FONT_SIZE
+      boxShadow: BOX_SHADOW
   )
 
   footer.add(new Modifier(

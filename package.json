@@ -2,6 +2,7 @@
   "name": "Bootstrap",
   "private": true,
   "dependencies": {
+    "date-utils": "^1.2.16",
     "debug": "0.7.4",
     "famous": "^0.3.1",
     "famous-polyfills": "^0.3.0",
