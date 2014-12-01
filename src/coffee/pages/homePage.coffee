@@ -30,19 +30,19 @@ HEIGHT_RATIO = window.innerHeight / SCREEN_SIZE[1]
 
 SIZE_CONST =
   ITEM:
-    NetHeight: 145  * HEIGHT_RATIO 
-    DateHeight: 27 * HEIGHT_RATIO 
-    TimeHeight: 40 * HEIGHT_RATIO 
+    NetHeight: 145  * HEIGHT_RATIO
+    DateHeight: 27 * HEIGHT_RATIO
+    TimeHeight: 40 * HEIGHT_RATIO
     DateTopPad: 36 * HEIGHT_RATIO
-    DateSectionWidth: 146 * WIDTH_RATIO 
+    DateSectionWidth: 146 * WIDTH_RATIO
     NameLeftPad: 40 * WIDTH_RATIO
     BorderWidth: 2
-    ButtonSectionWidth: 90 * WIDTH_RATIO 
+    ButtonSectionWidth: 90 * WIDTH_RATIO
     ButtonRadius: 27 * WIDTH_RATIO
 
   FONT:
-    Date: 27 * HEIGHT_RATIO 
-    Time: 40 * HEIGHT_RATIO 
+    Date: 27 * HEIGHT_RATIO
+    Time: 40 * HEIGHT_RATIO
     Name: 40 * HEIGHT_RATIO
 
   ADD_BUTTON:
@@ -91,12 +91,12 @@ buildItem = (name, datetime, scroll, isRepeated) ->
     properties:
       fontSize: SIZE_CONST.FONT.Name + 'px'
       lineHeight: SIZE_CONST.ITEM.NetHeight + 'px'
-      paddingLeft: SIZE_CONST.ITEM.NameLeftPad + 'px' 
+      paddingLeft: SIZE_CONST.ITEM.NameLeftPad + 'px'
   )
   buttonSection = new ContainerSurface(
     size: [SIZE_CONST.ITEM.ButtonSectionWidth, undefined]
   )
-  button = buildCircleButton SIZE_CONST.ITEM.ButtonRadius, isRepeated 
+  button = buildCircleButton SIZE_CONST.ITEM.ButtonRadius, isRepeated
   buttonSection.add(new Modifier(
     origin: [.5, .5]
     align: [.5, .5]
