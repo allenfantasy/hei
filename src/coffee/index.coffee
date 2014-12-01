@@ -18,4 +18,5 @@ newReminder = require './pages/newReminder.coffee'
 
 mainContext.add app
 
+app.registerPage homepage
 app.registerPage newReminder # app would set the first page as default
