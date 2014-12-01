@@ -12,8 +12,10 @@ module.exports = (grunt) ->
     clean: ['www/index.js', 'www/index.min.js', 'www/index.css']
 
     exec:
-      cordova_build:
-        cmd: 'make build-prod' 
+      build_android:
+        cmd: 'make build-prod-android'
+      build_ios:
+        cmd: 'make build-prod-ios'
 
     connect:
       options:
@@ -80,11 +82,18 @@ module.exports = (grunt) ->
       "watch"
     ]
 
-  grunt.registerTask "build", "Build apps", ->
+  grunt.registerTask "build_android", "Build apps", ->
     grunt.task.run [
       "clean",
       "compile",
-      "exec:cordova_build"
+      "exec:build_android"
+    ]
+
+  grunt.registerTask "build_ios", "Build apps", ->
+    grunt.task.run [
+      "clean",
+      "compile",
+      "exec:build_ios"
     ]
 
   grunt.registerTask "default", "serve"
