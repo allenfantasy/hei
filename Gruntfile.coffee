@@ -6,10 +6,16 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-contrib-cssmin"
   grunt.loadNpmTasks "grunt-contrib-less"
   grunt.loadNpmTasks "grunt-contrib-clean"
-  #grunt.loadNpmTasks "grunt-exec"
+  grunt.loadNpmTasks "grunt-exec"
 
   grunt.initConfig
     clean: ['www/index.js', 'www/index.min.js', 'www/index.css']
+
+    exec:
+      build_android:
+        cmd: 'make build-prod-android'
+      build_ios:
+        cmd: 'make build-prod-ios'
 
     connect:
       options:
@@ -76,9 +82,18 @@ module.exports = (grunt) ->
       "watch"
     ]
 
-  grunt.registerTask "build", "Build apps", ->
+  grunt.registerTask "build_android", "Build apps", ->
     grunt.task.run [
       "clean",
       "compile",
-      "exec:cordova_build"
+      "exec:build_android"
     ]
+
+  grunt.registerTask "build_ios", "Build apps", ->
+    grunt.task.run [
+      "clean",
+      "compile",
+      "exec:build_ios"
+    ]
+
+  grunt.registerTask "default", "serve"
