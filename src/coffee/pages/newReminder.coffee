@@ -4,17 +4,17 @@ Surface = require 'famous/core/Surface'
 ImageSurface = require 'famous/surfaces/ImageSurface'
 ContainerSurface = require 'famous/surfaces/ContainerSurface'
 SequentialLayout = require 'famous/views/SequentialLayout'
+EventHandler = require 'famous/core/EventHandler'
 
 Page = require '../lib/page.coffee'
 Slider = require '../lib/widgets/Slider.coffee'
 
 require 'date-utils'
 
-
 newReminder = new Page(
   name: 'newReminder'
 )
-
+MY_CENTER = new EventHandler()
 BLUE = '#41c4d3'
 GREY = '#9da9ab'
 LINE_HEIGHT = window.innerHeight / 10
@@ -73,12 +73,22 @@ createHeader = (content) ->
 
   return headerContainer
 
-createSlide = (range, step, initial) ->
+createSlide = (type, range, step, initial) ->
   slideContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
   )
 
   slider = new Slider [BAR_WIDTH, BAR_HEIGHT], THUMB_RADIUS, range, step, initial, GREY, BLUE
+
+  slider.onSlide 'update', (e) ->
+    value = e.position[0]
+    # valueBox.setContent(value)
+    console.log value
+    MY_CENTER.emit type, value
+
+  slider.onSlide 'end', (e) ->
+    console.log e.position
+
   slideContainer.add(CENTER_MODIFIER).add slider
 
   return slideContainer
@@ -125,6 +135,9 @@ createDate = (d) ->
     align: [0.95, 0.5]
     origin: [1, 0.5]
   )).add next
+
+  MY_CENTER.on '月', (value) ->
+    console.log '月' + value
 
   return dateContainer
 
@@ -255,12 +268,12 @@ header = createHeader '今天看完《活着》'
 footer = createFooter()
 
 surfaces.push header
-surfaces.push createSlide([0, 11], 12, 0)
+surfaces.push createSlide('月', [0, 11], 10, 0)
 surfaces.push createDate(today)
-surfaces.push createSlide([1, 31], 31, 31)
-surfaces.push createSlide([0, 23], 24, 0)
+surfaces.push createSlide('日', [1, 31], 1, 0)
+surfaces.push createSlide('时', [0, 23], 1, 0)
 surfaces.push createTime(today)
-surfaces.push createSlide([0, 59], 60, 0)
+surfaces.push createSlide('分', [0, 59], 1, 0)
 surfaces.push createFive('clock')
 surfaces.push createFive('cycling')
 surfaces.push footer
