@@ -16,8 +16,10 @@ BLUE = '#41c4d3'
 GREY = '#9da9ab'
 LINE_HEIGHT = window.innerHeight / 10
 FONT_SIZE = '20px'
+TIME_FONT_SIZE = '30px'
 TRUE_SIZE = [true, true]
 BOX_SHADOW = '0 0 3px #888888'
+ICON_SIZE = [30, 35]
 CENTER_MODIFIER = new Modifier(
   align: [.5, .5]
   origin: [.5, .5]
@@ -90,7 +92,7 @@ createDate = (d) ->
   dateContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
     properties:
-      fontSize: '30px'
+      fontSize: TIME_FONT_SIZE
       fontWeight: 'bold'
   )
 
@@ -151,7 +153,7 @@ createTime = (t) ->
     content: t.toFormat('HH24:MI')
     size: TRUE_SIZE
     properties:
-      fontSize: '30px'
+      fontSize: TIME_FONT_SIZE
       fontWeight: 'bold'
   )
 
@@ -175,24 +177,46 @@ createFive = (type) ->
   while i < 5
     reminders.push(new ImageSurface(
       content: './img/'+ type + 'off' + i + '.png'
-      size: [30, 35]
+      size: ICON_SIZE
     ))
     i++
 
   five.sequenceFrom reminders
   fiveContainer.add(CENTER_MODIFIER).add five
 
+  clock = [0, 0, 0, 0, 0]
+  cycling = -1
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
       reminderContent = reminder._imageUrl
-      if /off/.test(reminderContent)
-        reminderContent = reminderContent.replace(/off/, "on")
-        reminder.setContent reminderContent
-      else
-        reminderContent = reminderContent.replace(/on/, "off")
-        reminder.setContent reminderContent
+      if type == 'clock'
+        if /off/.test(reminderContent)
+          iconToggle(reminder, /off/, 'on')
+          clock[index] = 1
+        else
+          iconToggle(reminder, /on/, 'off')
+          clock[index] = 0
+      if type == 'cycling'
+        if /off/.test(reminderContent)
+          if index != cycling && cycling != -1
+            iconToggle(reminder, /off/, 'on')
+            iconToggle(reminders[cycling], /on/, 'off')
+            cycling = index
+          else if cycling == -1
+            iconToggle(reminder, /off/, 'on')
+            cycling = index
+          else if index == cycling
+            iconToggle(reminder, /off/, 'on')
+        else
+          iconToggle(reminder, /on/, 'off')
+          cycling = -1
 
   return fiveContainer
+
+iconToggle = (reminder, reg, target) ->
+  reminderContent = reminder._imageUrl
+  reminderContentReplaced = reminderContent.replace(reg, target)
+  reminder.setContent reminderContentReplaced
 
 createFooter = ->
   cancelButton = new Surface(
