@@ -8,5 +8,6 @@ html {
 }
 
 .week-name {
-  font-size: 20px !important
+  font-size: 20px !important;
+  margin-left: 10px;
 }

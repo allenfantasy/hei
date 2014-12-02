@@ -42,13 +42,14 @@ createHeader = (content) ->
 
   header = new Surface(
     content: content
+    size: TRUE_SIZE
     properties:
       lineHeight: LINE_HEIGHT + 'px'
       fontSize: FONT_SIZE
   )
 
   headerContainer.add(new Modifier(
-    align: [0.1, 0.5]
+    align: [0.05, 0.5]
     origin: [0, 0.5]
   )).add header
 
@@ -60,7 +61,7 @@ createSlide = (type) ->
   )
 
   slide = new Surface(
-    size: [window.innerWidth - 50, 8]
+    size: [0.9 * window.innerWidth, 8]
     properties:
       backgroundColor: GREY
   )
@@ -116,7 +117,7 @@ createDate = (d) ->
     date.setContent(generateDate(today))
 
   dateContainer.add(new Modifier(
-    align: [0.1, 0.5]
+    align: [0.05, 0.5]
     origin: [0, .5]
   )).add last
 
@@ -126,7 +127,7 @@ createDate = (d) ->
   )).add date
 
   dateContainer.add(new Modifier(
-    align: [0.9, 0.5]
+    align: [0.95, 0.5]
     origin: [1, 0.5]
   )).add next
 
@@ -169,7 +170,7 @@ createFive = (type) ->
   )
   five = new SequentialLayout(
     direction: 0
-    itemSpacing: 40
+    itemSpacing: window.innerWidth / 12
   )
 
   reminders = []
