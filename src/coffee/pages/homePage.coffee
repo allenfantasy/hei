@@ -130,7 +130,7 @@ addButton = new FloatButton(
 )
 
 addButton.on 'click', ->
-  homepage.jumpTo 'newReminder'   
+  homepage.jumpTo 'slider'
 
 itemList.sequenceFrom items
 container.add itemList

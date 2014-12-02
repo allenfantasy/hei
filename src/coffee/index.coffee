@@ -15,8 +15,10 @@ mainContext = Engine.createContext()
 app = new App()
 homepage = require './pages/homePage.coffee'
 newReminder = require './pages/newReminder.coffee'
+sliderPage = require './pages/slider.coffee'
 
 mainContext.add app
 
+app.registerPage sliderPage
 app.registerPage homepage
 app.registerPage newReminder # app would set the first page as default
