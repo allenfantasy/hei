@@ -6,7 +6,10 @@ ContainerSurface = require 'famous/surfaces/ContainerSurface'
 SequentialLayout = require 'famous/views/SequentialLayout'
 
 Page = require '../lib/page.coffee'
+Slider = require '../lib/widgets/Slider.coffee'
+
 require 'date-utils'
+
 
 newReminder = new Page(
   name: 'newReminder'
@@ -24,6 +27,15 @@ CENTER_MODIFIER = new Modifier(
   align: [.5, .5]
   origin: [.5, .5]
 )
+SCREEN_SIZE = [720, 1280] # iphone5
+WIDTH_RATIO = window.innerWidth / SCREEN_SIZE[0]
+HEIGHT_RATIO = window.innerHeight / SCREEN_SIZE[1]
+
+THUMB_RADIUS = 25 * HEIGHT_RATIO
+BAR_HEIGHT = 16 * HEIGHT_RATIO
+BAR_WIDTH = 0.9 * window.innerWidth
+BAR_SIDE_PAD = (window.innerWidth - BAR_WIDTH) / 2
+
 
 today = new Date()
 
@@ -61,30 +73,13 @@ createHeader = (content) ->
 
   return headerContainer
 
-createSlide = (type) ->
+createSlide = (range, step, initial) ->
   slideContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
   )
 
-  slide = new Surface(
-    size: [0.9 * window.innerWidth, 8]
-    properties:
-      backgroundColor: GREY
-  )
-
-  ball = new Surface(
-    size: [20, 20]
-    properties:
-      borderRadius: '50%'
-      backgroundColor: BLUE
-  )
-
-  slideContainer.add(CENTER_MODIFIER).add slide
-
-  slideContainer.add(new Modifier(
-    align: [0.5, 0.5]
-    origin: [0.5, 0.5]
-  )).add ball
+  slider = new Slider [BAR_WIDTH, BAR_HEIGHT], THUMB_RADIUS, range, step, initial, GREY, BLUE
+  slideContainer.add(CENTER_MODIFIER).add slider
 
   return slideContainer
 
@@ -249,7 +244,7 @@ createFooter = ->
   )).add(confirmButton)
 
   cancelButton.on 'click', ->
-    newReminder.jumpTo 'homepage'  
+    newReminder.jumpTo 'homepage'
 
   confirmButton.on 'click', ->
     newReminder.jumpTo 'homepage'
@@ -260,12 +255,12 @@ header = createHeader '今天看完《活着》'
 footer = createFooter()
 
 surfaces.push header
-surfaces.push createSlide('月')
+surfaces.push createSlide([0, 11], 12, 0)
 surfaces.push createDate(today)
-surfaces.push createSlide('日')
-surfaces.push createSlide('时')
+surfaces.push createSlide([1, 31], 31, 31)
+surfaces.push createSlide([0, 23], 24, 0)
 surfaces.push createTime(today)
-surfaces.push createSlide('分')
+surfaces.push createSlide([0, 59], 60, 0)
 surfaces.push createFive('clock')
 surfaces.push createFive('cycling')
 surfaces.push footer
