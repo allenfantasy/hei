@@ -117,12 +117,12 @@ createDate = (d) ->
   )
 
   last.on 'click', ->
-    today.addYears(-1)
-    date.setContent(generateDate(today))
+    d.addYears(-1)
+    date.setContent(generateDate(d))
 
   next.on 'click', ->
-    today.addYears(1)
-    date.setContent(generateDate(today))
+    d.addYears(1)
+    date.setContent(generateDate(d))
 
   dateContainer.add(new Modifier(
     align: [0.05, 0.5]
@@ -137,8 +137,14 @@ createDate = (d) ->
   )).add next
 
   MY_CENTER.on '月', (value) ->
-    console.log '月' + value
+    month = value * 11 / BAR_WIDTH
+    d.setMonth(month)
+    date.setContent(generateDate(d))
 
+  MY_CENTER.on '日', (value) ->
+    day = value * 30 / BAR_WIDTH + 1
+    d.setDate(day)
+    date.setContent(generateDate(d))
   return dateContainer
 
 generateDate = (d) ->
@@ -165,6 +171,16 @@ createTime = (t) ->
       fontWeight: 'bold'
   )
 
+  MY_CENTER.on '时', (value) ->
+    hours = value * 23 / BAR_WIDTH
+    t.setHours(hours)
+    time.setContent(t.toFormat('HH24:MI'))
+
+  MY_CENTER.on '分', (value) ->
+    minutes = value * 59 / BAR_WIDTH
+    t.setMinutes(minutes)
+    time.setContent(t.toFormat('HH24:MI'))
+    
   timeContainer.add(CENTER_MODIFIER).add time
 
   return timeContainer
@@ -268,12 +284,12 @@ header = createHeader '今天看完《活着》'
 footer = createFooter()
 
 surfaces.push header
-surfaces.push createSlide('月', [0, 11], 10, 0)
+surfaces.push createSlide('月', [0, BAR_WIDTH], BAR_WIDTH / 11, today.getMonth() * BAR_WIDTH / 11)
 surfaces.push createDate(today)
-surfaces.push createSlide('日', [1, 31], 1, 0)
-surfaces.push createSlide('时', [0, 23], 1, 0)
+surfaces.push createSlide('日', [0, BAR_WIDTH], BAR_WIDTH / 30, today.getDate() * BAR_WIDTH / 30)
+surfaces.push createSlide('时', [0, BAR_WIDTH], BAR_WIDTH / 23, today.getHours() * BAR_WIDTH / 23)
 surfaces.push createTime(today)
-surfaces.push createSlide('分', [0, 59], 1, 0)
+surfaces.push createSlide('分', [0, BAR_WIDTH], BAR_WIDTH / 59, today.getMinutes() * BAR_WIDTH / 59)
 surfaces.push createFive('clock')
 surfaces.push createFive('cycling')
 surfaces.push footer

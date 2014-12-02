@@ -24,9 +24,7 @@ Slider = (barSize, thumbRadius, range, step, initValue, barColor, thumbColor) ->
       cursor: 'pointer'
   )
   this._draggable = new Draggable(
-    # projection: Draggable.DIRECTION_X
-    scale: 1
-    xRange: range
+    xRange: [0 - step / 2, barSize[0] + step / 2]
     yRange: [0, 0]
     snapX: step
   )
