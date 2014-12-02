@@ -18,6 +18,10 @@ LINE_HEIGHT = window.innerHeight / 10
 FONT_SIZE = '20px'
 TRUE_SIZE = [true, true]
 BOX_SHADOW = '0 0 3px #888888'
+CENTER_MODIFIER = new Modifier(
+  align: [.5, .5]
+  origin: [.5, .5]
+)
 
 today = new Date()
 
@@ -73,10 +77,7 @@ createSlide = (type) ->
       backgroundColor: BLUE
   )
 
-  slideContainer.add(new Modifier(
-    align: [0.5, 0.5]
-    origin: [0.5, 0.5]
-  )).add slide
+  slideContainer.add(CENTER_MODIFIER).add slide
 
   slideContainer.add(new Modifier(
     align: [0.5, 0.5]
@@ -121,10 +122,7 @@ createDate = (d) ->
     origin: [0, .5]
   )).add last
 
-  dateContainer.add(new Modifier(
-    align: [.5, .5]
-    origin: [.5, .5]
-  )).add date
+  dateContainer.add(CENTER_MODIFIER).add date
 
   dateContainer.add(new Modifier(
     align: [0.95, 0.5]
@@ -157,10 +155,7 @@ createTime = (t) ->
       fontWeight: 'bold'
   )
 
-  timeContainer.add(new Modifier(
-    align: [.5, .5]
-    origin: [.5, .5]
-  )).add time
+  timeContainer.add(CENTER_MODIFIER).add time
 
   return timeContainer
 
@@ -185,10 +180,7 @@ createFive = (type) ->
     i++
 
   five.sequenceFrom reminders
-  fiveContainer.add(new Modifier(
-    origin: [.5, .5]
-    align: [.5, .5]
-  )).add five
+  fiveContainer.add(CENTER_MODIFIER).add five
 
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
@@ -250,10 +242,7 @@ surfaces.push footer
 
 layout.sequenceFrom surfaces
 
-container.add(new Modifier(
-  origin: [.5, .5]
-  align: [.5, .5]
-)).add layout
+container.add(CENTER_MODIFIER).add layout
 
 newReminder.add container
 
