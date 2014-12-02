@@ -248,6 +248,12 @@ createFooter = ->
     origin: [0.5, 0.5]
   )).add(confirmButton)
 
+  cancelButton.on 'click', ->
+    newReminder.jumpTo 'homepage'  
+
+  confirmButton.on 'click', ->
+    newReminder.jumpTo 'homepage'
+
   return footer
 
 header = createHeader '今天看完《活着》'

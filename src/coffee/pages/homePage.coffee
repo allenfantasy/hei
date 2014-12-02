@@ -116,7 +116,7 @@ addButtonMod = new Modifier(
   transform: Transform.translate(0 - SIZE_CONST.ADD_BUTTON.RightPad, 0 - SIZE_CONST.ADD_BUTTON.BottomPad, 0)
 )
 ADD_BUTTON_SIZE = SIZE_CONST.ADD_BUTTON.Size
-# TODO: 加号有点不居中，是因为字体的问题
+
 addButton = new FloatButton(
   type: 'image'
   imgsrc: './img/ic_add_24px.svg'
@@ -128,6 +128,9 @@ addButton = new FloatButton(
     fontSize: "#{SIZE_CONST.ADD_BUTTON.FontSize}px"
     borderRadius: "50%"
 )
+
+addButton.on 'click', ->
+  homepage.jumpTo 'slider'
 
 itemList.sequenceFrom items
 container.add itemList
