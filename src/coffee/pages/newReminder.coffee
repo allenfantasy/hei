@@ -135,7 +135,7 @@ createDate = (d) ->
   )).add next
 
   MY_CENTER.on '月', (value) ->
-    month = Math.round(value * 11 / BAR_WIDTH)
+    month = Math.round(value / MONTH_STEP)
     if Date.validateDay(d.getDate(), d.getFullYear(), month)
       d.setMonth(month)
       date.setContent(generateDate(d))
@@ -145,7 +145,7 @@ createDate = (d) ->
       date.setContent(generateDate(d))
 
   MY_CENTER.on '日', (value) ->
-    day = Math.round(value * 30 / BAR_WIDTH + 1)
+    day = Math.round(value / DAY_STEP + 1)
     if Date.validateDay(day, d.getFullYear(), d.getMonth())
       d.setDate(day)
       date.setContent(generateDate(d))
@@ -177,12 +177,12 @@ createTime = (t) ->
   )
 
   MY_CENTER.on '时', (value) ->
-    hours = Math.round(value * 23 / BAR_WIDTH)
+    hours = Math.round(value / HOUR_STEP)
     t.setHours(hours)
     time.setContent(generateTime(t))
 
   MY_CENTER.on '分', (value) ->
-    minutes = Math.round(value * 59 / BAR_WIDTH)
+    minutes = Math.round(value / MINUTE_STEP)
     t.setMinutes(minutes)
     time.setContent(generateTime(t))
 
