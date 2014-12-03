@@ -23,11 +23,13 @@ Slider = (barSize, thumbRadius, range, step, initValue, barColor, thumbColor) ->
       borderRadius: '50%'
       cursor: 'pointer'
   )
+
   this._draggable = new Draggable(
     xRange: [0 - step / 2, barSize[0] + step / 2]
     yRange: [0, 0]
     snapX: step
   )
+
   this._bar = new Surface(
     size: barSize
     properties:

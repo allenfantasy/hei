@@ -36,10 +36,13 @@ HEIGHT_RATIO = window.innerHeight / SCREEN_SIZE[1]
 THUMB_RADIUS = 25 * HEIGHT_RATIO
 BAR_HEIGHT = 16 * HEIGHT_RATIO
 BAR_WIDTH = 0.9 * window.innerWidth
-BAR_SIDE_PAD = (window.innerWidth - BAR_WIDTH) / 2
 
+MONTH_STEP = BAR_WIDTH / 11
+DAY_STEP = BAR_WIDTH / 30
+HOUR_STEP = BAR_WIDTH / 23
+MINUTE_STEP = BAR_WIDTH / 59
 
-today = new Date()
+alarm = new Date()
 
 container = new ContainerSurface(
   size: [window.innerWidth, window.innerHeight]
@@ -50,8 +53,6 @@ container = new ContainerSurface(
 layout = new SequentialLayout(
   direction: 1
 )
-
-surfaces = []
 
 createHeader = (content) ->
   headerContainer = new ContainerSurface(
@@ -85,9 +86,6 @@ createSlide = (type, range, step, initial) ->
   slider.onSlide 'update', (e) ->
     value = e.position[0]
     MY_CENTER.emit type, value
-
-  slider.onSlide 'end', (e) ->
-    console.log e.position
 
   slideContainer.add(CENTER_MODIFIER).add slider
 
@@ -171,7 +169,7 @@ createTime = (t) ->
   )
 
   time = new Surface(
-    content: t.toFormat('HH24:MI')
+    content: generateTime(t)
     size: TRUE_SIZE
     properties:
       fontSize: TIME_FONT_SIZE
@@ -181,16 +179,19 @@ createTime = (t) ->
   MY_CENTER.on '时', (value) ->
     hours = Math.round(value * 23 / BAR_WIDTH)
     t.setHours(hours)
-    time.setContent(t.toFormat('HH24:MI'))
+    time.setContent(generateTime(t))
 
   MY_CENTER.on '分', (value) ->
     minutes = Math.round(value * 59 / BAR_WIDTH)
     t.setMinutes(minutes)
-    time.setContent(t.toFormat('HH24:MI'))
+    time.setContent(generateTime(t))
 
   timeContainer.add(CENTER_MODIFIER).add time
 
   return timeContainer
+
+generateTime = (t) ->
+  return t.toFormat 'HH24:MI'
 
 createFive = (type) ->
   fiveContainer = new ContainerSurface(
@@ -287,21 +288,21 @@ createFooter = ->
 
   return footer
 
-header = createHeader '今天看完《活着》'
-footer = createFooter()
+getInitial = (index, step) ->
+  return index * step
 
-surfaces.push header
-surfaces.push createSlide('月', [0, BAR_WIDTH], BAR_WIDTH / 11, today.getMonth() * BAR_WIDTH / 11)
-surfaces.push createDate(today)
-surfaces.push createSlide('日', [0, BAR_WIDTH], BAR_WIDTH / 30, today.getDate() * BAR_WIDTH / 30)
-surfaces.push createSlide('时', [0, BAR_WIDTH], BAR_WIDTH / 23, today.getHours() * BAR_WIDTH / 23)
-surfaces.push createTime(today)
-surfaces.push createSlide('分', [0, BAR_WIDTH], BAR_WIDTH / 59, today.getMinutes() * BAR_WIDTH / 59)
-surfaces.push createFive('clock')
-surfaces.push createFive('cycling')
-surfaces.push footer
-
-layout.sequenceFrom surfaces
+layout.sequenceFrom [
+  createHeader('今天看完《活着》'),
+  createSlide('月', [0, BAR_WIDTH], MONTH_STEP, getInitial(alarm.getMonth(), MONTH_STEP)),
+  createDate(alarm),
+  createSlide('日', [0, BAR_WIDTH], DAY_STEP, getInitial(alarm.getDate(), DAY_STEP)),
+  createSlide('时', [0, BAR_WIDTH], HOUR_STEP, getInitial(alarm.getHours(), HOUR_STEP)),
+  createTime(alarm),
+  createSlide('分', [0, BAR_WIDTH], MINUTE_STEP, getInitial(alarm.getMinutes(), MINUTE_STEP)),
+  createFive('clock'),
+  createFive('cycling'),
+  createFooter()
+]
 
 container.add(CENTER_MODIFIER).add layout
 
