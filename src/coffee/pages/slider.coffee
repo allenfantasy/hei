@@ -23,7 +23,7 @@ sliderPage = new Page(
   name: 'slider'
 )
 
-slider = new Slider [BAR_WIDTH, BAR_HEIGHT], THUMB_RADIUS, [0, 200], 10, 0, '#9da9ab', '#41c4d3' 
+slider = new Slider [BAR_WIDTH, BAR_HEIGHT], THUMB_RADIUS, [0, 200], 10, 0, '#9da9ab', '#41c4d3'
 
 value = 0
 
@@ -42,10 +42,11 @@ valueBox = new Surface(
 slider.onSlide 'update', (e) ->
   value = e.position[0]
   valueBox.setContent(value)
+  console.log e
 
 slider.onSlide 'end', (e) ->
   console.log e.position
-  
+
 sliderPage.add slider
 
 sliderPage.add valueMod
