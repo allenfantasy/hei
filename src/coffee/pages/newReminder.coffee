@@ -14,6 +14,7 @@ require 'date-utils'
 newReminder = new Page(
   name: 'newReminder'
 )
+
 MY_CENTER = new EventHandler()
 BLUE = '#41c4d3'
 GREY = '#9da9ab'
@@ -27,6 +28,7 @@ CENTER_MODIFIER = new Modifier(
   align: [.5, .5]
   origin: [.5, .5]
 )
+
 SCREEN_SIZE = [720, 1280] # iphone5
 WIDTH_RATIO = window.innerWidth / SCREEN_SIZE[0]
 HEIGHT_RATIO = window.innerHeight / SCREEN_SIZE[1]
@@ -82,8 +84,6 @@ createSlide = (type, range, step, initial) ->
 
   slider.onSlide 'update', (e) ->
     value = e.position[0]
-    # valueBox.setContent(value)
-    console.log value
     MY_CENTER.emit type, value
 
   slider.onSlide 'end', (e) ->
@@ -137,14 +137,21 @@ createDate = (d) ->
   )).add next
 
   MY_CENTER.on '月', (value) ->
-    month = value * 11 / BAR_WIDTH
-    d.setMonth(month)
-    date.setContent(generateDate(d))
+    month = Math.round(value * 11 / BAR_WIDTH)
+    if Date.validateDay(d.getDate(), d.getFullYear(), month)
+      d.setMonth(month)
+      date.setContent(generateDate(d))
+    else
+      d.setMonth(month)
+      d.setDate(Date.getDaysInMonth(d.getFullYear(), month))
+      date.setContent(generateDate(d))
 
   MY_CENTER.on '日', (value) ->
-    day = value * 30 / BAR_WIDTH + 1
-    d.setDate(day)
-    date.setContent(generateDate(d))
+    day = Math.round(value * 30 / BAR_WIDTH + 1)
+    if Date.validateDay(day, d.getFullYear(), d.getMonth())
+      d.setDate(day)
+      date.setContent(generateDate(d))
+
   return dateContainer
 
 generateDate = (d) ->
@@ -172,15 +179,15 @@ createTime = (t) ->
   )
 
   MY_CENTER.on '时', (value) ->
-    hours = value * 23 / BAR_WIDTH
+    hours = Math.round(value * 23 / BAR_WIDTH)
     t.setHours(hours)
     time.setContent(t.toFormat('HH24:MI'))
 
   MY_CENTER.on '分', (value) ->
-    minutes = value * 59 / BAR_WIDTH
+    minutes = Math.round(value * 59 / BAR_WIDTH)
     t.setMinutes(minutes)
     time.setContent(t.toFormat('HH24:MI'))
-    
+
   timeContainer.add(CENTER_MODIFIER).add time
 
   return timeContainer
