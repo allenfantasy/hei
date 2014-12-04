@@ -13,12 +13,12 @@ mainContext = Engine.createContext()
 
 # your app here
 app = new App()
-homepage = require './pages/homePage.coffee'
-newReminder = require './pages/newReminder.coffee'
+memoListPage = require './pages/memoListPage.coffee'
+editMemoPage = require './pages/editMemoPage.coffee'
 sliderPage = require './pages/slider.coffee'
 
 mainContext.add app
 
-app.registerPage homepage
-app.registerPage newReminder
+app.registerPage memoListPage
+app.registerPage editMemoPage
 #app.registerPage sliderPage

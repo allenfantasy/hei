@@ -12,8 +12,8 @@ Slider = require '../lib/widgets/Slider.coffee'
 
 require 'date-utils'
 
-newReminder = new Page(
-  name: 'newReminder'
+page = new Page(
+  name: 'editMemo'
 )
 
 MY_CENTER = new EventHandler()
@@ -62,7 +62,7 @@ createHeader = (content) ->
       boxShadow: BOX_SHADOW
   )
 
-  header = new InputSurface(
+  headerContainer.input = new InputSurface(
     value: content || ''
     size: [true, LINE_HEIGHT - 3]
     name: 'name'
@@ -76,7 +76,7 @@ createHeader = (content) ->
   headerContainer.add(new Modifier(
     align: [0.05, 0.5]
     origin: [0, 0.5]
-  )).add header
+  )).add headerContainer.input
 
   return headerContainer
 
@@ -88,7 +88,8 @@ createSlide = (type, range, step, initial) ->
   slider = new Slider [BAR_WIDTH, BAR_HEIGHT], THUMB_RADIUS, range, step, initial, GREY, BLUE
 
   slider.onSlide 'update', (e) ->
-    value = e.position[0]
+    #value = e.position[0]
+    value = e.value
     MY_CENTER.emit type, value
 
   slideContainer.add(CENTER_MODIFIER).add slider
@@ -285,18 +286,18 @@ createFooter = ->
   )).add(confirmButton)
 
   cancelButton.on 'click', ->
-    newReminder.jumpTo 'homepage' # do nothing
+    page.jumpTo 'homepage' # do nothing
 
   confirmButton.on 'click', ->
-    newReminder.jumpTo 'homepage', 'abcd' # TODO: go with model
+    page.jumpTo 'homepage', 'abcd' # TODO: go with model
 
   return footer
 
 getInitial = (index, step) ->
   return index * step
 
-layout.sequenceFrom [
-  createHeader('今天看完《活着》'),
+layoutItems = [
+  createHeader(''),
   createSlide('月', [0, BAR_WIDTH], MONTH_STEP, getInitial(alarm.getMonth(), MONTH_STEP)),
   createDate(alarm),
   createSlide('日', [0, BAR_WIDTH], DAY_STEP, getInitial(alarm.getDate(), DAY_STEP)),
@@ -308,11 +309,15 @@ layout.sequenceFrom [
   createFooter()
 ]
 
+layout.sequenceFrom layoutItems
+
 container.add(CENTER_MODIFIER).add layout
 
-newReminder.add container
+page.add container
 
-newReminder.onEvent 'beforeEnter', (data) ->
-  console.log data
+page.onEvent 'beforeEnter', (todo) ->
+  if todo && todo.isRepeated # passed a Todo object
+    layoutItems[0].input.setValue todo.get('name')
+    # TODO: update date...
 
-module.exports = newReminder
+module.exports = page

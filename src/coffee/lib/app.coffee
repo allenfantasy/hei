@@ -49,13 +49,14 @@ App::registerPage = (page) ->
 App::switchTo = (pageName, data) ->
   # TODO: set inTransform/outTransform
   page = @_pages[pageName]
-  page.emitEvent 'beforeEnter', data if data
+  data = data || null
+  page.emitEvent 'beforeEnter', data
   unless page
     throw new Error("Unregistered page name!")
     return
   @_currentPage = page
   @_switcher.show page
-  page.emitEvent 'afterEnter', data if data
+  page.emitEvent 'afterEnter', data
   return
 
 App::registerWidget = (widget) ->

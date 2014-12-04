@@ -150,7 +150,7 @@ addButton = new FloatButton(
 )
 
 addButton.on 'click', ->
-  homepage.jumpTo 'newReminder', 'abcd'
+  homepage.jumpTo 'editMemo'
 
 todoList.sequenceFrom todoRenderItems
 container.add todoList

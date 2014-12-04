@@ -13,9 +13,12 @@ Slider = (barSize, thumbRadius, range, step, initValue, barColor, thumbColor) ->
   View.call this
 
   barSidePad = (window.innerWidth - barSize[0])/2
-  this.value = initValue || 0
+  @value = initValue || 0
+  @range = range
+  @barSize = barSize
+  console.log @range
 
-  this._thumb = new Surface(
+  @_thumb = new Surface(
     size: [thumbRadius * 2, thumbRadius * 2]
     content: ''
     properties:
@@ -24,35 +27,35 @@ Slider = (barSize, thumbRadius, range, step, initValue, barColor, thumbColor) ->
       cursor: 'pointer'
   )
 
-  this._draggable = new Draggable(
+  @_draggable = new Draggable(
     xRange: [0 - step / 2, barSize[0] + step / 2]
     yRange: [0, 0]
     snapX: step
   )
 
-  this._bar = new Surface(
+  @_bar = new Surface(
     size: barSize
     properties:
       backgroundColor: barColor
   )
 
-  this._thumb.pipe this._draggable
+  @_thumb.pipe @_draggable
 
-  this._draggable.setPosition [initValue, 0]
+  @_draggable.setPosition [initValue, 0]
 
-  this.container = new ContainerSurface(
+  @container = new ContainerSurface(
     size: barSize
   )
-  this.container.add(new Modifier(
+  @container.add(new Modifier(
     ailgn: [0, 0]
     origin: [0, 0]
-  )).add this._bar
+  )).add @_bar
 
-  this.container.add(new Modifier(
+  @container.add(new Modifier(
     transform: Transform.translate(-thumbRadius, - thumbRadius + barSize[1]/2, 1)
-  )).add this._draggable
-    .add this._thumb
-  this.add this.container
+  )).add @_draggable
+    .add @_thumb
+  @add @container
 
   return
 
@@ -60,6 +63,11 @@ Slider:: = Object.create(View::)
 Slider::constructor = Slider
 
 Slider::onSlide = (type, handler) ->
-  this._draggable.on type, handler
+  $ = @
+  @_draggable.on type, (event) ->
+    event.value = $.range[0] + event.position[0] * $.barSize[0] / ($.range[1] - $.range[0])
+    handler(event)
+
+#Slider::set = (value) ->
 
 module.exports = Slider
