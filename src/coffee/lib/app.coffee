@@ -46,9 +46,10 @@ App::registerPage = (page) ->
     throw new Error("Duplicated page name")
   return
 
-App::switchTo = (pageName) ->
+App::switchTo = (pageName, data) ->
   # TODO: set inTransform/outTransform
   page = @_pages[pageName]
+  page.emitEvent 'enter', data if data
   unless page
     throw new Error("Unregistered page name!")
     return

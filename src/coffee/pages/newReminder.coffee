@@ -308,4 +308,7 @@ container.add(CENTER_MODIFIER).add layout
 
 newReminder.add container
 
+newReminder.onEvent 'enter', (data) ->
+  console.log data
+
 module.exports = newReminder
