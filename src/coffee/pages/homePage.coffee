@@ -8,19 +8,11 @@ FlexibleLayout = require 'famous/views/FlexibleLayout'
 Page = require '../lib/page.coffee'
 FloatButton = require '../lib/widgets/FloatButton.coffee'
 
+Todo = require '../models/Todo.coffee'
+
+window.Todo = Todo
+
 util = require '../lib/util.coffee'
-
-homepage = new Page(
-  name: 'homepage'
-)
-
-container = new ContainerSurface(
-  size: [window.innerWidth, window.innerHeight]
-  properties:
-    overflow: 'hidden'
-)
-
-itemList = new Scrollview()
 
 # Size Constants
 SCREEN_SIZE = [720, 1280] # iphone5
@@ -69,7 +61,10 @@ buildCircleButton = (radius, isRepeated) ->
       border: '1px solid #9da9ab'
   )
 
-buildItem = (name, datetime, scroll, isRepeated) ->
+buildItem = (todo, scroll) ->
+  name = todo.get('name') 
+  datetime = todo.get('date')
+  isRepeated = todo.isRepeated()
   itemWrapper = new ContainerSurface(
     size: [undefined, SIZE_CONST.ITEM.NetHeight + SIZE_CONST.ITEM.BorderWidth]
     classes: if isRepeated then ['item', 'repeated'] else ['item']
@@ -107,8 +102,33 @@ buildItem = (name, datetime, scroll, isRepeated) ->
   itemWrapper.pipe scroll
   itemWrapper
 
-items = ['每周论坛', '心理学史期中考', '绝命毒师'].map (name, index) ->
-  buildItem name, (if index % 3 is 2 then null else new Date()), itemList, index % 2 is 0
+#todos = [new Todo({
+  #name: '每周论坛',
+  #date: new Date(),
+  #repeated: true
+#}), new Todo({
+  #name: '每周论坛2',
+  #date: new Date(),
+  #repeated: true
+#})] 
+#todos.forEach (todo) ->
+#  console.log todo.get('id')
+todos = []
+
+homepage = new Page(
+  name: 'homepage'
+)
+
+container = new ContainerSurface(
+  size: [window.innerWidth, window.innerHeight]
+  properties:
+    overflow: 'hidden'
+)
+
+todoList = new Scrollview()
+
+todoRenderItems = todos.map (todo, index) ->
+  buildItem todo, todoList
 
 addButtonMod = new Modifier(
   origin: [1,1]
@@ -132,10 +152,20 @@ addButton = new FloatButton(
 addButton.on 'click', ->
   homepage.jumpTo 'newReminder', 'abcd'
 
-itemList.sequenceFrom items
-container.add itemList
+todoList.sequenceFrom todoRenderItems
+container.add todoList
 container.add addButtonMod
          .add addButton
 homepage.add container
+
+homepage.onEvent 'beforeEnter', (data) ->
+  console.log 'before enter'
+  todo = data.todo
+  if todo and todo.isRepeated # duck typing
+    todos.push(todo)
+    todoRenderItems.push(buildItem todo, todoList)
+
+homepage.onEvent 'afterEnter', (data) ->
+  console.log 'after enter'
 
 module.exports = homepage

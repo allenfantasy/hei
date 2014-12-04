@@ -20,5 +20,5 @@ sliderPage = require './pages/slider.coffee'
 mainContext.add app
 
 app.registerPage homepage
-app.registerPage newReminder # app would set the first page as default
+app.registerPage newReminder
 #app.registerPage sliderPage
