@@ -29,6 +29,16 @@ CENTER_MODIFIER = new Modifier(
   origin: [.5, .5]
 )
 
+LEFT_MODIFIER = new Modifier(
+  align: [0.05, 0.5]
+  origin: [0, 0.5]
+)
+
+RIGHT_MODIFIER = new Modifier(
+  align: [0.95, 0.5]
+  origin: [1, 0.5]
+)
+
 SCREEN_SIZE = [720, 1280] # iphone5
 WIDTH_RATIO = window.innerWidth / SCREEN_SIZE[0]
 HEIGHT_RATIO = window.innerHeight / SCREEN_SIZE[1]
@@ -43,6 +53,9 @@ HOUR_STEP = BAR_WIDTH / 23
 MINUTE_STEP = BAR_WIDTH / 59
 
 alarm = new Date()
+alarm.setSeconds(0)
+clock = [0, 0, 0, 0, 0]
+cycling = -1
 
 container = new ContainerSurface(
   size: [window.innerWidth, window.innerHeight]
@@ -69,10 +82,22 @@ createHeader = (content) ->
       fontSize: FONT_SIZE
   )
 
-  headerContainer.add(new Modifier(
-    align: [0.05, 0.5]
-    origin: [0, 0.5]
-  )).add header
+  switcher = new ImageSurface(
+    content: './img/switch_off.png'
+    size: [25, 30]
+  )
+
+  headerContainer.add(LEFT_MODIFIER).add header
+
+  headerContainer.add(RIGHT_MODIFIER).add switcher
+
+  switcher.on 'click', ->
+    switcherContent = switcher._imageUrl
+    if /off/.test switcherContent
+      switcherContentReplaced = switcherContent.replace(/off/, "on")
+    else
+      switcherContentReplaced = switcherContent.replace(/on/, "off")
+    switcher.setContent(switcherContentReplaced)
 
   return headerContainer
 
@@ -85,6 +110,7 @@ createSlide = (type, range, step, initial) ->
 
   slider.onSlide 'update', (e) ->
     value = e.position[0]
+    console.log alarm
     MY_CENTER.emit type, value
 
   slideContainer.add(CENTER_MODIFIER).add slider
@@ -122,17 +148,11 @@ createDate = (d) ->
     d.addYears(1)
     date.setContent(generateDate(d))
 
-  dateContainer.add(new Modifier(
-    align: [0.05, 0.5]
-    origin: [0, .5]
-  )).add last
+  dateContainer.add(LEFT_MODIFIER).add last
 
   dateContainer.add(CENTER_MODIFIER).add date
 
-  dateContainer.add(new Modifier(
-    align: [0.95, 0.5]
-    origin: [1, 0.5]
-  )).add next
+  dateContainer.add(RIGHT_MODIFIER).add next
 
   MY_CENTER.on '月', (value) ->
     month = Math.round(value / MONTH_STEP)
@@ -216,8 +236,6 @@ createFive = (type) ->
   five.sequenceFrom reminders
   fiveContainer.add(CENTER_MODIFIER).add five
 
-  clock = [0, 0, 0, 0, 0]
-  cycling = -1
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
       reminderContent = reminder._imageUrl
@@ -291,8 +309,9 @@ createFooter = ->
 getInitial = (index, step) ->
   return index * step
 
-layout.sequenceFrom [
-  createHeader('今天看完《活着》'),
+
+alarmLayout = new SequentialLayout()
+alarmLayout.sequenceFrom [
   createSlide('月', [0, BAR_WIDTH], MONTH_STEP, getInitial(alarm.getMonth(), MONTH_STEP)),
   createDate(alarm),
   createSlide('日', [0, BAR_WIDTH], DAY_STEP, getInitial(alarm.getDate(), DAY_STEP)),
@@ -302,6 +321,11 @@ layout.sequenceFrom [
   createFive('clock'),
   createFive('cycling'),
   createFooter()
+]
+
+layout.sequenceFrom [
+  createHeader('今天看完《活着》'),
+  alarmLayout
 ]
 
 container.add(CENTER_MODIFIER).add layout
