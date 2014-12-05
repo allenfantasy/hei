@@ -1,6 +1,7 @@
 Modifier = require 'famous/core/Modifier'
 Transform = require 'famous/core/Transform'
 Surface = require 'famous/core/Surface'
+InputSurface = require 'famous/surfaces/InputSurface'
 ImageSurface = require 'famous/surfaces/ImageSurface'
 ContainerSurface = require 'famous/surfaces/ContainerSurface'
 SequentialLayout = require 'famous/views/SequentialLayout'
@@ -74,9 +75,12 @@ createHeader = (content) ->
       boxShadow: BOX_SHADOW
   )
 
-  header = new Surface(
-    content: content
-    size: TRUE_SIZE
+  header = new InputSurface(
+    value: content || ''
+    size: [true, LINE_HEIGHT - 3]
+    name: 'name'
+    placeholder: '请输入名称'
+    type: 'text'
     properties:
       lineHeight: LINE_HEIGHT + 'px'
       fontSize: FONT_SIZE
@@ -299,10 +303,10 @@ createFooter = ->
   )).add(confirmButton)
 
   cancelButton.on 'click', ->
-    newReminder.jumpTo 'homepage'
+    newReminder.jumpTo 'homepage' # do nothing
 
   confirmButton.on 'click', ->
-    newReminder.jumpTo 'homepage'
+    newReminder.jumpTo 'homepage', 'abcd' # TODO: go with model
 
   return footer
 
@@ -324,12 +328,15 @@ alarmLayout.sequenceFrom [
 ]
 
 layout.sequenceFrom [
-  createHeader('今天看完《活着》'),
+  createHeader(),
   alarmLayout
 ]
 
 container.add(CENTER_MODIFIER).add layout
 
 newReminder.add container
+
+newReminder.onEvent 'beforeEnter', (data) ->
+  console.log data
 
 module.exports = newReminder
