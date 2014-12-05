@@ -25,6 +25,7 @@ Slider = (barSize, thumbRadius, range, step, initValue, barColor, thumbColor) ->
       backgroundColor: thumbColor
       borderRadius: '50%'
       cursor: 'pointer'
+      zIndex: '1'
   )
 
   @_draggable = new Draggable(

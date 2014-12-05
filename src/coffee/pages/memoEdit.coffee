@@ -6,6 +6,7 @@ ImageSurface = require 'famous/surfaces/ImageSurface'
 ContainerSurface = require 'famous/surfaces/ContainerSurface'
 SequentialLayout = require 'famous/views/SequentialLayout'
 EventHandler = require 'famous/core/EventHandler'
+FlexibleLayout = require 'famous/views/FlexibleLayout'
 
 Page = require '../lib/page.coffee'
 Slider = require '../lib/widgets/Slider.coffee'
@@ -30,6 +31,16 @@ CENTER_MODIFIER = new Modifier(
   origin: [.5, .5]
 )
 
+LEFT_MODIFIER = new Modifier(
+  align: [0.05, 0.5]
+  origin: [0, 0.5]
+)
+
+RIGHT_MODIFIER = new Modifier(
+  align: [0.95, 0.5]
+  origin: [1, 0.5]
+)
+
 SCREEN_SIZE = [720, 1280] # iphone5
 WIDTH_RATIO = window.innerWidth / SCREEN_SIZE[0]
 HEIGHT_RATIO = window.innerHeight / SCREEN_SIZE[1]
@@ -43,7 +54,13 @@ DAY_STEP = BAR_WIDTH / 30
 HOUR_STEP = BAR_WIDTH / 23
 MINUTE_STEP = BAR_WIDTH / 59
 
+SWITCHON_IMAGE_URL = './img/switch_on.png'
+SWITCHOFF_IMAGE_URL = './img/switch_off.png'
+
 alarm = new Date()
+alarm.setSeconds(0)
+clock = [0, 0, 0, 0, 0]
+cycling = -1
 
 container = new ContainerSurface(
   size: [window.innerWidth, window.innerHeight]
@@ -51,15 +68,17 @@ container = new ContainerSurface(
     color: GREY
 )
 
-layout = new SequentialLayout(
+initialRatios = [1, 0, 9]
+finalRatios = [1, 8, 1]
+alarmToggle = false
+layout = new FlexibleLayout(
   direction: 1
+  ratios: initialRatios
 )
 
 createHeader = (content) ->
   headerContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
-    properties:
-      boxShadow: BOX_SHADOW
   )
 
   headerContainer.input = new InputSurface(
@@ -73,10 +92,22 @@ createHeader = (content) ->
       fontSize: FONT_SIZE
   )
 
-  headerContainer.add(new Modifier(
-    align: [0.05, 0.5]
-    origin: [0, 0.5]
-  )).add headerContainer.input
+  headerContainer.add(LEFT_MODIFIER).add headerContainer.input
+
+  switcher = new ImageSurface(
+    content: SWITCHOFF_IMAGE_URL
+    size: [25, 30]
+  )
+
+  headerContainer.add(RIGHT_MODIFIER).add switcher
+
+  switcher.on 'click', ->
+    ratios = if alarmToggle then initialRatios else finalRatios;
+    layout.setRatios(ratios, {curve : 'easeOut', duration : 500});
+    alarmToggle = !alarmToggle;
+
+    switcherContent = if alarmToggle then SWITCHON_IMAGE_URL else SWITCHOFF_IMAGE_URL
+    switcher.setContent switcherContent
 
   return headerContainer
 
@@ -127,20 +158,14 @@ createDate = (d) ->
     d.addYears(1)
     date.setContent(generateDate(d))
 
-  dateContainer.add(new Modifier(
-    align: [0.05, 0.5]
-    origin: [0, .5]
-  )).add last
+  dateContainer.add(LEFT_MODIFIER).add last
 
   dateContainer.add(CENTER_MODIFIER).add date
 
-  dateContainer.add(new Modifier(
-    align: [0.95, 0.5]
-    origin: [1, 0.5]
-  )).add next
+  dateContainer.add(RIGHT_MODIFIER).add next
 
   MY_CENTER.on '月', (value) ->
-    month = Math.round(value * 11 / BAR_WIDTH)
+    month = Math.round(value / MONTH_STEP)
     if Date.validateDay(d.getDate(), d.getFullYear(), month)
       d.setMonth(month)
       date.setContent(generateDate(d))
@@ -150,7 +175,7 @@ createDate = (d) ->
       date.setContent(generateDate(d))
 
   MY_CENTER.on '日', (value) ->
-    day = Math.round(value * 30 / BAR_WIDTH + 1)
+    day = Math.round(value / DAY_STEP + 1)
     if Date.validateDay(day, d.getFullYear(), d.getMonth())
       d.setDate(day)
       date.setContent(generateDate(d))
@@ -182,12 +207,12 @@ createTime = (t) ->
   )
 
   MY_CENTER.on '时', (value) ->
-    hours = Math.round(value * 23 / BAR_WIDTH)
+    hours = Math.round(value / HOUR_STEP)
     t.setHours(hours)
     time.setContent(generateTime(t))
 
   MY_CENTER.on '分', (value) ->
-    minutes = Math.round(value * 59 / BAR_WIDTH)
+    minutes = Math.round(value / MINUTE_STEP)
     t.setMinutes(minutes)
     time.setContent(generateTime(t))
 
@@ -221,8 +246,6 @@ createFive = (type) ->
   five.sequenceFrom reminders
   fiveContainer.add(CENTER_MODIFIER).add five
 
-  clock = [0, 0, 0, 0, 0]
-  cycling = -1
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
       reminderContent = reminder._imageUrl
@@ -272,7 +295,6 @@ createFooter = ->
     size: [window.innerWidth, LINE_HEIGHT]
     properties:
       fontSize: FONT_SIZE
-      boxShadow: BOX_SHADOW
   )
 
   footer.add(new Modifier(
@@ -296,8 +318,11 @@ createFooter = ->
 getInitial = (index, step) ->
   return index * step
 
-layoutItems = [
-  createHeader(''),
+dateLayout = new SequentialLayout(
+  direction: 1
+)
+
+dateLayout.sequenceFrom [
   createSlide('月', [0, BAR_WIDTH], MONTH_STEP, getInitial(alarm.getMonth(), MONTH_STEP)),
   createDate(alarm),
   createSlide('日', [0, BAR_WIDTH], DAY_STEP, getInitial(alarm.getDate(), DAY_STEP)),
@@ -306,6 +331,19 @@ layoutItems = [
   createSlide('分', [0, BAR_WIDTH], MINUTE_STEP, getInitial(alarm.getMinutes(), MINUTE_STEP)),
   createFive('clock'),
   createFive('cycling'),
+]
+
+dateLayoutContainer = new ContainerSurface(
+  size: [undefined, undefined]
+  properties:
+    overflow: 'hidden'
+)
+
+dateLayoutContainer.add dateLayout
+
+layoutItems = [
+  createHeader(''),
+  dateLayoutContainer,
   createFooter()
 ]
 
