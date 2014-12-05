@@ -122,8 +122,10 @@ createSlide = (type, range, step, initial) ->
   slider = new Slider [BAR_WIDTH, BAR_HEIGHT], THUMB_RADIUS, range, step, initial, GREY, BLUE
 
   slider.onSlide 'update', (value) -> # value ISNT physical position
-    #console.log value
     MY_CENTER.emit type, value
+
+  MY_CENTER.on "update:#{type}", (value) ->
+    slider.setValue value
 
   slideContainer.add(CENTER_MODIFIER).add slider
 
@@ -320,22 +322,20 @@ createFooter = ->
 
   return footer
 
-getInitial = (index, step) ->
-  return index * step
-
 dateLayout = new SequentialLayout(
   direction: 1
 )
 
+# TODO: get const
 dateLayoutItems = [
-  createSlide('月', [0, 11], MONTH_STEP, getInitial(alarm.getMonth(), MONTH_STEP)),
-  createDate(alarm),
-  createSlide('日', [1, 31], DAY_STEP, getInitial(alarm.getDate(), DAY_STEP)),
-  createSlide('时', [0, 23], HOUR_STEP, getInitial(alarm.getHours(), HOUR_STEP)),
-  createTime(alarm),
-  createSlide('分', [0, 59], MINUTE_STEP, getInitial(alarm.getMinutes(), MINUTE_STEP)),
-  createFive('clock'),
-  createFive('cycling'),
+  createSlide 'month', [0, 11], MONTH_STEP, alarm.getMonth()
+  createDate alarm
+  createSlide 'day', [1, 31], DAY_STEP, alarm.getDate()
+  createSlide 'hour', [0, 23], HOUR_STEP, alarm.getHours()
+  createTime alarm
+  createSlide 'minute', [0, 59], MINUTE_STEP, alarm.getMinutes()
+  createFive 'clock'
+  createFive 'cycling'
 ]
 
 dateLayout.sequenceFrom dateLayoutItems
@@ -370,14 +370,14 @@ page.onEvent 'beforeEnter', (memo) ->
     date = memo.get('date') || new Date()
     MY_CENTER.emit 'update:date', date 
 
-    # update sliders
-    ## oh shit...
-    #monthP = getInitial(date.getMonth(), MONTH_STEP)
-    #dayP = getInitial(date.getDate(), DAY_STEP)
-    #hourP = getInitial(date.getHours(), HOUR_STEP)
-    #minuteP = getInitial(date.getMinutes(), MINUTE_STEP)
-    
-    #dateLayoutItems[0].setPosition
-    # TODO: update date...
+    # update date sliders
+    dateObj =
+      month: date.getMonth()
+      day: date.getDate()
+      hour: date.getHours()
+      minute: date.getMinutes()
+
+    ['month', 'day', 'hour', 'minute'].forEach (type) ->
+      MY_CENTER.emit "update:#{type}", dateObj[type]
 
 module.exports = page

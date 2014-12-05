@@ -10,12 +10,12 @@ ContainerSurface = require 'famous/surfaces/ContainerSurface'
 Transitionable.registerMethod 'snap', SnapTransition
 
 Slider = (barSize, thumbRadius, valueRange, step, initValue, barColor, thumbColor) ->
-  View.call this
+  View.call @
 
   barSidePad = (window.innerWidth - barSize[0])/2
   @value = initValue || 0
-  @valueRange = valueRange
-  @barSize = barSize
+  @_v = valueRange
+  @_p = [0, barSize[0]]
 
   @_thumb = new Surface(
     size: [thumbRadius * 2, thumbRadius * 2]
@@ -41,7 +41,7 @@ Slider = (barSize, thumbRadius, valueRange, step, initValue, barColor, thumbColo
 
   @_thumb.pipe @_draggable
 
-  @_draggable.setPosition [initValue, 0]
+  @_draggable.setPosition [v2p(@_p, @_v, initValue), 0]
 
   @container = new ContainerSurface(
     size: barSize
@@ -63,10 +63,13 @@ Slider:: = Object.create(View::)
 Slider::constructor = Slider
 
 Slider::onSlide = (type, handler) ->
-  v = @valueRange
-  p = [0, @barSize[0]]
+  $ = @
   @_draggable.on type, (event) ->
-    handler p2v(p, v, event.position[0])
+    handler p2v($._p, $._v, event.position[0])
+
+# change position
+Slider::setValue = (value) ->
+  @_draggable.setPosition [v2p(@_p, @_v, value), 0]
 
 # private
 
