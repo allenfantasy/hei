@@ -62,7 +62,7 @@ buildCircleButton = (radius, isRepeated) ->
   )
 
 buildItem = (memo, scroll) ->
-  name = memo.get('name') 
+  name = memo.get('name')
   datetime = memo.get('date')
   isRepeated = memo.isRepeated()
   itemWrapper = new ContainerSurface(
@@ -110,7 +110,7 @@ buildItem = (memo, scroll) ->
   #name: '每周论坛2',
   #date: new Date(),
   #repeated: true
-#})] 
+#})]
 #memos.forEach (memo) ->
 #  console.log memo.get('id')
 memos = []

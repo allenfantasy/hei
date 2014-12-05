@@ -30,6 +30,16 @@ CENTER_MODIFIER = new Modifier(
   origin: [.5, .5]
 )
 
+LEFT_MODIFIER = new Modifier(
+  align: [0.05, 0.5]
+  origin: [0, 0.5]
+)
+
+RIGHT_MODIFIER = new Modifier(
+  align: [0.95, 0.5]
+  origin: [1, 0.5]
+)
+
 SCREEN_SIZE = [720, 1280] # iphone5
 WIDTH_RATIO = window.innerWidth / SCREEN_SIZE[0]
 HEIGHT_RATIO = window.innerHeight / SCREEN_SIZE[1]
@@ -44,6 +54,9 @@ HOUR_STEP = BAR_WIDTH / 23
 MINUTE_STEP = BAR_WIDTH / 59
 
 alarm = new Date()
+alarm.setSeconds(0)
+clock = [0, 0, 0, 0, 0]
+cycling = -1
 
 container = new ContainerSurface(
   size: [window.innerWidth, window.innerHeight]
@@ -73,10 +86,22 @@ createHeader = (content) ->
       fontSize: FONT_SIZE
   )
 
-  headerContainer.add(new Modifier(
-    align: [0.05, 0.5]
-    origin: [0, 0.5]
-  )).add headerContainer.input
+  headerContainer.add(LEFT_MODIFIER).add headerContainer.input
+
+  switcher = new ImageSurface(
+    content: './img/switch_off.png'
+    size: [25, 30]
+  )
+
+  headerContainer.add(RIGHT_MODIFIER).add switcher
+
+  switcher.on 'click', ->
+    switcherContent = switcher._imageUrl
+    if /off/.test switcherContent
+      switcherContentReplaced = switcherContent.replace(/off/, "on")
+    else
+      switcherContentReplaced = switcherContent.replace(/on/, "off")
+    switcher.setContent(switcherContentReplaced)
 
   return headerContainer
 
@@ -127,20 +152,14 @@ createDate = (d) ->
     d.addYears(1)
     date.setContent(generateDate(d))
 
-  dateContainer.add(new Modifier(
-    align: [0.05, 0.5]
-    origin: [0, .5]
-  )).add last
+  dateContainer.add(LEFT_MODIFIER).add last
 
   dateContainer.add(CENTER_MODIFIER).add date
 
-  dateContainer.add(new Modifier(
-    align: [0.95, 0.5]
-    origin: [1, 0.5]
-  )).add next
+  dateContainer.add(RIGHT_MODIFIER).add next
 
   MY_CENTER.on '月', (value) ->
-    month = Math.round(value * 11 / BAR_WIDTH)
+    month = Math.round(value / MONTH_STEP)
     if Date.validateDay(d.getDate(), d.getFullYear(), month)
       d.setMonth(month)
       date.setContent(generateDate(d))
@@ -150,7 +169,7 @@ createDate = (d) ->
       date.setContent(generateDate(d))
 
   MY_CENTER.on '日', (value) ->
-    day = Math.round(value * 30 / BAR_WIDTH + 1)
+    day = Math.round(value / DAY_STEP + 1)
     if Date.validateDay(day, d.getFullYear(), d.getMonth())
       d.setDate(day)
       date.setContent(generateDate(d))
@@ -182,12 +201,12 @@ createTime = (t) ->
   )
 
   MY_CENTER.on '时', (value) ->
-    hours = Math.round(value * 23 / BAR_WIDTH)
+    hours = Math.round(value / HOUR_STEP)
     t.setHours(hours)
     time.setContent(generateTime(t))
 
   MY_CENTER.on '分', (value) ->
-    minutes = Math.round(value * 59 / BAR_WIDTH)
+    minutes = Math.round(value / MINUTE_STEP)
     t.setMinutes(minutes)
     time.setContent(generateTime(t))
 
@@ -221,8 +240,6 @@ createFive = (type) ->
   five.sequenceFrom reminders
   fiveContainer.add(CENTER_MODIFIER).add five
 
-  clock = [0, 0, 0, 0, 0]
-  cycling = -1
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
       reminderContent = reminder._imageUrl
