@@ -1,11 +1,15 @@
 Base = require './Base.coffee'
 
-counter = 0
 class Memo extends Base
   constructor: (obj) ->
     super obj
-    @set('id', counter++)
+    return
+
   isRepeated: ->
     if @_data['repeated'] then true else false
+
+  validate:
+    # To be implemented
+    true
 
 module.exports = Memo

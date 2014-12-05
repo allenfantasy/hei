@@ -1,12 +1,20 @@
 EventHandler = require 'famous/core/EventHandler'
 
-# TODO: validation
+counter = 0
 class Base
   constructor: (obj) ->
     @_data = obj or {}
     @_center = new EventHandler()
     @_defaults = (if obj then @_clone(obj) else {})
+    @set('id', counter++)
+    @setOptions(obj.options)
     return
+
+  setOptions: (options) ->
+    # TODO: local, remote(url)
+    if options.localStorage
+      @_proxy = 'localStorage'
+      @_name = options.localStorage 
 
   get: (key) ->
     @_data[key]
@@ -78,6 +86,9 @@ class Base
 
     return
 
+  id: ->
+    @get 'id'
+
   getData: ->
     result = {}
     obj = @_data
@@ -86,6 +97,45 @@ class Base
       return
       
     result
+
+  has: (attr) ->
+    val = @get(attr)
+    val isnt null and val isnt `undefined`
+
+  isNew: ->
+    not @has 'id'
+
+  # `cb` would be called when validation failed
+  validate: (cb, options) ->
+    return true unless options.validate
+    # TODO: execute cb function if failed
+    # cb should like this: function(err) { // .... }
+    true
+
+  save: (options) ->
+    options.validate = options.validate || true
+
+    success = options.success
+    error = options.error || null
+    if @validate(error, options)
+      # TODO: patch?
+      method = if @isNew then 'create' else 'update'
+      @sync method, this, options 
+
+    this
+
+  sync: (method, model, options) ->
+    # only localStorage now
+    # TODO: add remote way
+    records = JSON.parse(window.localStorage.getItem(@_name) || '[]')
+    if method is 'create'
+      records.push model
+    else
+      modelIndex = records.findIndex (obj) ->
+        return obj.id() is model.id()
+      records[modelIndex] = model# if model.eql(records[modelIndex])
+
+    window.localStorage.setItem(@_name, JSON.stringify(records))
 
   _clone: (obj) ->
     return obj if obj is null or typeof obj isnt "object"
