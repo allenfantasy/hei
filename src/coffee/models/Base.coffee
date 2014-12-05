@@ -1,5 +1,6 @@
 EventHandler = require 'famous/core/EventHandler'
 
+# TODO: delete
 class Base
   constructor: (obj) ->
     @_data = obj or {}
@@ -118,7 +119,7 @@ class Base
     error = options.error || null
     if @validate(error, options)
       @set obj
-      method = if @isNew then 'create' else 'update'
+      method = if @isNew() then 'create' else 'update'
       # save to localStorage
       @sync method, this, options
       success(this)
@@ -129,12 +130,13 @@ class Base
     # TODO: add remote way
     name = @_localStorageName
     records = JSON.parse(window.localStorage.getItem(name) or '[]')
-    # BUG: always push
+
     if method is 'create'
       records.push model
     else
-      modelIndex = records.findIndex (obj) ->
-        return obj.id() is model.id()
+      modelIndex = records.map((obj) ->
+        obj.id()
+      ).indexOf model.id()
       records[modelIndex] = model# if model.eql(records[modelIndex])
 
     newRecords = records.map (r) ->
@@ -142,10 +144,6 @@ class Base
 
     window.localStorage.setItem(name, JSON.stringify(newRecords))
     return
-
-  # alias
-  toJSON: ->
-    @getData()
 
   _clone: (obj) ->
     return obj if obj is null or typeof obj isnt "object"
