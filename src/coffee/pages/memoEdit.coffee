@@ -82,7 +82,7 @@ createHeader = (content) ->
   )
 
   headerContainer.input = new InputSurface(
-    value: content || ''
+    value: content or ''
     size: [true, LINE_HEIGHT - 3]
     name: 'name'
     placeholder: '请输入名称'
@@ -249,26 +249,24 @@ createFive = (type) ->
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
       reminderContent = reminder._imageUrl
-      if type == 'clock'
-        if /off/.test(reminderContent)
-          iconToggle(reminder, /off/, 'on')
+      if type is 'clock'
+        if /off/.test reminderContent
+          iconToggle reminder, /off/, 'on'
           clock[index] = 1
         else
-          iconToggle(reminder, /on/, 'off')
+          iconToggle reminder, /on/, 'off'
           clock[index] = 0
-      if type == 'cycling'
-        if /off/.test(reminderContent)
-          if index != cycling && cycling != -1
-            iconToggle(reminder, /off/, 'on')
-            iconToggle(reminders[cycling], /on/, 'off')
+      if type is 'cycling'
+        if /off/.test reminderContent
+          if cycling isnt -1
+            iconToggle reminder, /off/, 'on'
+            iconToggle reminders[cycling], /on/, 'off'
             cycling = index
-          else if cycling == -1
-            iconToggle(reminder, /off/, 'on')
+          else if cycling is -1
+            iconToggle reminder, /off/, 'on'
             cycling = index
-          else if index == cycling
-            iconToggle(reminder, /off/, 'on')
         else
-          iconToggle(reminder, /on/, 'off')
+          iconToggle reminder, /on/, 'off'
           cycling = -1
 
   return fiveContainer
@@ -334,7 +332,7 @@ dateLayout.sequenceFrom [
 ]
 
 dateLayoutContainer = new ContainerSurface(
-  size: [undefined, undefined]
+  size: [undefined, undefined] # for flexible
   properties:
     overflow: 'hidden'
 )
@@ -354,7 +352,7 @@ container.add(CENTER_MODIFIER).add layout
 page.add container
 
 page.onEvent 'beforeEnter', (memo) ->
-  if memo && memo.isRepeated # passed a Memo object
+  if memo and memo.isRepeated # passed a Memo object
     layoutItems[0].input.setValue memo.get('name')
     # TODO: update date...
 
