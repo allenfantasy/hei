@@ -102,11 +102,11 @@ buildItem = (memo, scroll) ->
   itemWrapper.pipe scroll
   itemWrapper
 
-#memos = [new memo({
+#memos = [new Memo({
   #name: '每周论坛',
   #date: new Date(),
   #repeated: true
-#}), new memo({
+#}), new Memo({
   #name: '每周论坛2',
   #date: new Date(),
   #repeated: true
@@ -158,12 +158,15 @@ container.add addButtonMod
          .add addButton
 page.add container
 
-page.onEvent 'beforeEnter', (data) ->
-  if data and data.memo
-    memo = data.memo
-    if memo and memo.isRepeated # duck typing
-      memos.push(memo)
-      memoRenderItems.push(buildItem memo, memoList)
+page.onEvent 'beforeEnter', (memo) ->
+  console.log memo
+  if memo and memo.isRepeated # duck typing
+    # if memo exists in current memos, update value
+    # else push
+    console.log 'new demo coming'
+    console.log memo
+    memos.push(memo)
+    memoRenderItems.push(buildItem memo, memoList)
 
 page.onEvent 'afterEnter', (data) ->
   console.log 'after enter'

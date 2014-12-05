@@ -1,20 +1,19 @@
 EventHandler = require 'famous/core/EventHandler'
 
-counter = 0
 class Base
   constructor: (obj) ->
     @_data = obj or {}
     @_center = new EventHandler()
     @_defaults = (if obj then @_clone(obj) else {})
-    @set('id', counter++)
-    @setOptions(obj.options)
+    @_localStorageName = 'hei_base'
+    #@setOptions(obj.options)
     return
 
-  setOptions: (options) ->
+  #setOptions: (options) ->
+    #@_proxy = 'localStorage'
     # TODO: local, remote(url)
-    if options.localStorage
-      @_proxy = 'localStorage'
-      @_name = options.localStorage 
+    #if options.localStorage
+    #  @_name = options.localStorage
 
   get: (key) ->
     @_data[key]
@@ -28,7 +27,7 @@ class Base
       ).forEach (p) ->
         __this.set p, obj[p]
         return
-    
+
       return
     unless @_data.hasOwnProperty(key)
       @_center.emit "add", [
@@ -95,7 +94,7 @@ class Base
     Object.keys(obj).forEach (key) ->
       result[key] = obj[key] if obj.hasOwnProperty(key)
       return
-      
+
     result
 
   has: (attr) ->
@@ -112,22 +111,24 @@ class Base
     # cb should like this: function(err) { // .... }
     true
 
-  save: (options) ->
+  save: (obj, options) ->
     options.validate = options.validate || true
 
     success = options.success
     error = options.error || null
     if @validate(error, options)
-      # TODO: patch?
+      @set obj
       method = if @isNew then 'create' else 'update'
-      @sync method, this, options 
-
+      # save to localStorage
+      @sync method, this, options
+      success(this)
     this
 
   sync: (method, model, options) ->
     # only localStorage now
     # TODO: add remote way
-    records = JSON.parse(window.localStorage.getItem(@_name) || '[]')
+    name = @_localStorageName
+    records = JSON.parse(window.localStorage.getItem(name) || '[]')
     if method is 'create'
       records.push model
     else
@@ -135,7 +136,15 @@ class Base
         return obj.id() is model.id()
       records[modelIndex] = model# if model.eql(records[modelIndex])
 
-    window.localStorage.setItem(@_name, JSON.stringify(records))
+    newRecords = records.map (r) ->
+      if r.getData then r.getData() else r # return an acceptable object to JSON.stringify
+
+    window.localStorage.setItem(name, JSON.stringify(newRecords))
+    return
+
+  # alias
+  toJSON: ->
+    @getData()
 
   _clone: (obj) ->
     return obj if obj is null or typeof obj isnt "object"
@@ -143,5 +152,6 @@ class Base
     for attr of obj
       copy[attr] = obj[attr] if obj.hasOwnProperty(attr)
     copy
+
 
 module.exports = Base

@@ -10,6 +10,7 @@ FlexibleLayout = require 'famous/views/FlexibleLayout'
 
 Page = require '../lib/page.coffee'
 Slider = require '../lib/widgets/Slider.coffee'
+Memo = require '../models/Memo.coffee'
 
 require 'date-utils'
 
@@ -57,10 +58,13 @@ MINUTE_STEP = BAR_WIDTH / 59
 SWITCHON_IMAGE_URL = './img/switch_on.png'
 SWITCHOFF_IMAGE_URL = './img/switch_off.png'
 
-alarm = new Date() # TODO: change this into page.memo
-alarm.setSeconds(0)
-clock = [0, 0, 0, 0, 0]
-cycling = -1
+page.memo = new Memo()  # this is the default one
+
+name = ''
+date = new Date()
+date.setSeconds(0)
+alarm = [false, false, false, false, false]
+repeatStateIndex = -1 # store the index of active repeat icon
 
 container = new ContainerSurface(
   size: [window.innerWidth, window.innerHeight]
@@ -76,13 +80,13 @@ layout = new FlexibleLayout(
   ratios: initialRatios
 )
 
-createHeader = (content) ->
+createHeader = () ->
   headerContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
   )
 
   input = new InputSurface(
-    value: content || ''
+    value: name
     size: [true, LINE_HEIGHT - 3]
     name: 'name'
     placeholder: '请输入名称'
@@ -92,7 +96,11 @@ createHeader = (content) ->
       fontSize: FONT_SIZE
   )
 
-  headerContainer.add(LEFT_MODIFIER).add headerContainer.input
+  input.on 'input', ->
+    name = input.getValue()
+    #console.log name
+
+  headerContainer.add(LEFT_MODIFIER).add input
 
   switcher = new ImageSurface(
     content: SWITCHOFF_IMAGE_URL
@@ -124,7 +132,11 @@ createSlide = (type, range, step, initial) ->
   slider.onSlide 'update', (value) -> # value ISNT physical position
     MY_CENTER.emit type, value
 
+  slider.onSlide 'end', (value) -> # value ISNT physical position
+    MY_CENTER.emit type, value
+
   MY_CENTER.on "update:#{type}", (value) ->
+    console.log value
     slider.setValue value
 
   slideContainer.add(CENTER_MODIFIER).add slider
@@ -139,7 +151,7 @@ createDate = (d) ->
       fontWeight: 'bold'
   )
 
-  date = new Surface(
+  dateSurface = new Surface(
     content: generateDate(d)
     size: TRUE_SIZE
   )
@@ -156,36 +168,35 @@ createDate = (d) ->
 
   last.on 'click', ->
     d.addYears(-1)
-    date.setContent(generateDate(d))
+    dateSurface.setContent(generateDate(d))
 
   next.on 'click', ->
-    d.addYears(1)
-    date.setContent(generateDate(d))
+    dateSurface.setContent(generateDate(d))
 
   dateContainer.add(LEFT_MODIFIER).add last
 
-  dateContainer.add(CENTER_MODIFIER).add date
+  dateContainer.add(CENTER_MODIFIER).add dateSurface
 
   dateContainer.add(RIGHT_MODIFIER).add next
 
-  MY_CENTER.on '月', (value) ->
+  MY_CENTER.on 'month', (value) ->
     month = Math.round(value)
     if Date.validateDay(d.getDate(), d.getFullYear(), month)
       d.setMonth(month)
-      date.setContent(generateDate(d))
+      dateSurface.setContent(generateDate(d))
     else
       d.setMonth(month)
       d.setDate(Date.getDaysInMonth(d.getFullYear(), month))
-      date.setContent(generateDate(d))
+      dateSurface.setContent(generateDate(d))
 
-  MY_CENTER.on '日', (value) ->
+  MY_CENTER.on 'day', (value) ->
     day = Math.round(value)
     if Date.validateDay(day, d.getFullYear(), d.getMonth())
       d.setDate(day)
-      date.setContent(generateDate(d))
+      dateSurface.setContent(generateDate(d))
 
   MY_CENTER.on 'update:date', (date) ->
-    date.setContent(generateDate(date))
+    dateSurface.setContent(generateDate(date))
 
   return dateContainer
 
@@ -213,12 +224,12 @@ createTime = (t) ->
       fontWeight: 'bold'
   )
 
-  MY_CENTER.on '时', (value) ->
+  MY_CENTER.on 'hour', (value) ->
     hours = Math.round(value)
     t.setHours(hours)
     time.setContent(generateTime(t))
 
-  MY_CENTER.on '分', (value) ->
+  MY_CENTER.on 'minute', (value) ->
     minutes = Math.round(value)
     t.setMinutes(minutes)
     time.setContent(generateTime(t))
@@ -239,16 +250,11 @@ createFive = (type) ->
     itemSpacing: window.innerWidth / 12
   )
 
-  reminders = []
-
-  i = 0
-
-  while i < 5
-    reminders.push(new ImageSurface(
-      content: './img/'+ type + 'off' + i + '.png'
+  reminders = [0, 1, 2, 3, 4].map (index) ->
+    new ImageSurface(
+      content: "./img/#{type}off#{index}.png"
       size: ICON_SIZE
-    ))
-    i++
+    )
 
   five.sequenceFrom reminders
   fiveContainer.add(CENTER_MODIFIER).add five
@@ -256,34 +262,34 @@ createFive = (type) ->
   reminders.forEach (reminder, index) ->
     reminder.on 'click', ->
       reminderContent = reminder._imageUrl
-      if type == 'clock'
-        if /off/.test(reminderContent)
-          iconToggle(reminder, /off/, 'on')
-          clock[index] = 1
+      if type is 'alarm'
+        unless alarm[index]
+          activateIcon reminder, type, index
+          alarm[index] = true
         else
-          iconToggle(reminder, /on/, 'off')
-          clock[index] = 0
-      if type == 'cycling'
-        if /off/.test(reminderContent)
-          if index != cycling && cycling != -1
-            iconToggle(reminder, /off/, 'on')
-            iconToggle(reminders[cycling], /on/, 'off')
-            cycling = index
-          else if cycling == -1
-            iconToggle(reminder, /off/, 'on')
-            cycling = index
-          else if index == cycling
-            iconToggle(reminder, /off/, 'on')
+          deactivateIcon reminder, type, index
+          alarm[index] = false
+
+        #console.log alarm
+      if type is 'repeat'
+        activeIdx = repeatStateIndex
+
+        if index isnt activeIdx
+          activateIcon reminder, type, index
+          deactivateIcon reminders[activeIdx], type, activeIdx if activeIdx != -1
+          repeatStateIndex = index
         else
-          iconToggle(reminder, /on/, 'off')
-          cycling = -1
+          deactivateIcon reminder, type, index
+          repeatStateIndex = -1
+        #console.log repeatStateIndex
 
   return fiveContainer
 
-iconToggle = (reminder, reg, target) ->
-  reminderContent = reminder._imageUrl
-  reminderContentReplaced = reminderContent.replace(reg, target)
-  reminder.setContent reminderContentReplaced
+activateIcon = (icon, type, index) ->
+  icon.setContent("./img/#{type}on#{index}.png")
+
+deactivateIcon = (icon, type, index) ->
+  icon.setContent("./img/#{type}off#{index}.png")
 
 createFooter = ->
   cancelButton = new Surface(
@@ -318,7 +324,28 @@ createFooter = ->
     page.jumpTo 'memoIndex' # do nothing
 
   confirmButton.on 'click', ->
-    page.jumpTo 'memoIndex', 'abcd' # TODO: go with model
+    if alarmToggle
+      attr =
+        name: name
+        hasTime: true
+        date: date
+        repeated: if repeatStateIndex is -1 then false else Memo.REPEATED_STATE[repeatStateIndex]
+        alarm: alarm
+    else
+      attr =
+        name: name
+        hasTime: false
+
+    page.memo.save(
+      attr
+    ,
+      validate: true
+      success: (memo) ->
+        page.jumpTo 'memoIndex', memo
+      error: ->
+        # TODO
+        window.alert 'something fucked up'
+    )
 
   return footer
 
@@ -328,14 +355,14 @@ dateLayout = new SequentialLayout(
 
 # TODO: get const
 dateLayoutItems = [
-  createSlide 'month', [0, 11], MONTH_STEP, alarm.getMonth()
-  createDate alarm
-  createSlide 'day', [1, 31], DAY_STEP, alarm.getDate()
-  createSlide 'hour', [0, 23], HOUR_STEP, alarm.getHours()
-  createTime alarm
-  createSlide 'minute', [0, 59], MINUTE_STEP, alarm.getMinutes()
-  createFive 'clock'
-  createFive 'cycling'
+  createSlide 'month', [0, 11], MONTH_STEP, date.getMonth()
+  createDate date
+  createSlide 'day', [1, 31], DAY_STEP, date.getDate()
+  createSlide 'hour', [0, 23], HOUR_STEP, date.getHours()
+  createTime date
+  createSlide 'minute', [0, 59], MINUTE_STEP, date.getMinutes()
+  createFive 'alarm'
+  createFive 'repeat'
 ]
 
 dateLayout.sequenceFrom dateLayoutItems
@@ -363,12 +390,12 @@ page.add container
 page.onEvent 'beforeEnter', (memo) ->
   if memo && memo.isRepeated # passed a Memo object ==> EDIT
     # update the value of NAME input
-    page.memo = memo
+    page.memo = memo || page.memo
     MY_CENTER.emit 'update:header', memo.get('name')
 
     # update the central HTML of current date
     date = memo.get('date') || new Date()
-    MY_CENTER.emit 'update:date', date 
+    MY_CENTER.emit 'update:date', date
 
     # update date sliders
     dateObj =
