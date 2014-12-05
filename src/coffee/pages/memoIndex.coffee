@@ -8,9 +8,9 @@ FlexibleLayout = require 'famous/views/FlexibleLayout'
 Page = require '../lib/page.coffee'
 FloatButton = require '../lib/widgets/FloatButton.coffee'
 
-Todo = require '../models/Todo.coffee'
+Memo = require '../models/Memo.coffee'
 
-window.Todo = Todo
+window.Memo = Memo # Warning: Only for testing, remove it when finished
 
 util = require '../lib/util.coffee'
 
@@ -61,10 +61,10 @@ buildCircleButton = (radius, isRepeated) ->
       border: '1px solid #9da9ab'
   )
 
-buildItem = (todo, scroll) ->
-  name = todo.get('name') 
-  datetime = todo.get('date')
-  isRepeated = todo.isRepeated()
+buildItem = (memo, scroll) ->
+  name = memo.get('name') 
+  datetime = memo.get('date')
+  isRepeated = memo.isRepeated()
   itemWrapper = new ContainerSurface(
     size: [undefined, SIZE_CONST.ITEM.NetHeight + SIZE_CONST.ITEM.BorderWidth]
     classes: if isRepeated then ['item', 'repeated'] else ['item']
@@ -102,21 +102,21 @@ buildItem = (todo, scroll) ->
   itemWrapper.pipe scroll
   itemWrapper
 
-#todos = [new Todo({
+#memos = [new memo({
   #name: '每周论坛',
   #date: new Date(),
   #repeated: true
-#}), new Todo({
+#}), new memo({
   #name: '每周论坛2',
   #date: new Date(),
   #repeated: true
 #})] 
-#todos.forEach (todo) ->
-#  console.log todo.get('id')
-todos = []
+#memos.forEach (memo) ->
+#  console.log memo.get('id')
+memos = []
 
-homepage = new Page(
-  name: 'homepage'
+page = new Page(
+  name: 'memoIndex'
 )
 
 container = new ContainerSurface(
@@ -125,10 +125,10 @@ container = new ContainerSurface(
     overflow: 'hidden'
 )
 
-todoList = new Scrollview()
+memoList = new Scrollview()
 
-todoRenderItems = todos.map (todo, index) ->
-  buildItem todo, todoList
+memoRenderItems = memos.map (memo, index) ->
+  buildItem memo, memoList
 
 addButtonMod = new Modifier(
   origin: [1,1]
@@ -150,22 +150,22 @@ addButton = new FloatButton(
 )
 
 addButton.on 'click', ->
-  homepage.jumpTo 'editMemo'
+  page.jumpTo 'editMemo'
 
-todoList.sequenceFrom todoRenderItems
-container.add todoList
+memoList.sequenceFrom memoRenderItems
+container.add memoList
 container.add addButtonMod
          .add addButton
-homepage.add container
+page.add container
 
-homepage.onEvent 'beforeEnter', (data) ->
-  console.log 'before enter'
-  todo = data.todo
-  if todo and todo.isRepeated # duck typing
-    todos.push(todo)
-    todoRenderItems.push(buildItem todo, todoList)
+page.onEvent 'beforeEnter', (data) ->
+  if data and data.memo
+    memo = data.memo
+    if memo and memo.isRepeated # duck typing
+      memos.push(memo)
+      memoRenderItems.push(buildItem memo, memoList)
 
-homepage.onEvent 'afterEnter', (data) ->
+page.onEvent 'afterEnter', (data) ->
   console.log 'after enter'
 
-module.exports = homepage
+module.exports = page

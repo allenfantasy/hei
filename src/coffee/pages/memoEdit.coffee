@@ -286,10 +286,10 @@ createFooter = ->
   )).add(confirmButton)
 
   cancelButton.on 'click', ->
-    page.jumpTo 'homepage' # do nothing
+    page.jumpTo 'memoIndex' # do nothing
 
   confirmButton.on 'click', ->
-    page.jumpTo 'homepage', 'abcd' # TODO: go with model
+    page.jumpTo 'memoIndex', 'abcd' # TODO: go with model
 
   return footer
 
@@ -315,9 +315,9 @@ container.add(CENTER_MODIFIER).add layout
 
 page.add container
 
-page.onEvent 'beforeEnter', (todo) ->
-  if todo && todo.isRepeated # passed a Todo object
-    layoutItems[0].input.setValue todo.get('name')
+page.onEvent 'beforeEnter', (memo) ->
+  if memo && memo.isRepeated # passed a Memo object
+    layoutItems[0].input.setValue memo.get('name')
     # TODO: update date...
 
 module.exports = page
