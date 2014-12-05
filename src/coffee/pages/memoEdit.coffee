@@ -57,7 +57,7 @@ MINUTE_STEP = BAR_WIDTH / 59
 SWITCHON_IMAGE_URL = './img/switch_on.png'
 SWITCHOFF_IMAGE_URL = './img/switch_off.png'
 
-alarm = new Date()
+alarm = new Date() # TODO: change this into page.memo
 alarm.setSeconds(0)
 clock = [0, 0, 0, 0, 0]
 cycling = -1
@@ -81,7 +81,7 @@ createHeader = (content) ->
     size: [window.innerWidth, LINE_HEIGHT]
   )
 
-  headerContainer.input = new InputSurface(
+  input = new InputSurface(
     value: content || ''
     size: [true, LINE_HEIGHT - 3]
     name: 'name'
@@ -109,6 +109,9 @@ createHeader = (content) ->
     switcherContent = if alarmToggle then SWITCHON_IMAGE_URL else SWITCHOFF_IMAGE_URL
     switcher.setContent switcherContent
 
+  MY_CENTER.on 'update:header', (name) ->
+    input.setValue name
+
   return headerContainer
 
 createSlide = (type, range, step, initial) ->
@@ -118,9 +121,8 @@ createSlide = (type, range, step, initial) ->
 
   slider = new Slider [BAR_WIDTH, BAR_HEIGHT], THUMB_RADIUS, range, step, initial, GREY, BLUE
 
-  slider.onSlide 'update', (e) ->
-    #value = e.position[0]
-    value = e.value
+  slider.onSlide 'update', (value) -> # value ISNT physical position
+    #console.log value
     MY_CENTER.emit type, value
 
   slideContainer.add(CENTER_MODIFIER).add slider
@@ -165,7 +167,7 @@ createDate = (d) ->
   dateContainer.add(RIGHT_MODIFIER).add next
 
   MY_CENTER.on '月', (value) ->
-    month = Math.round(value / MONTH_STEP)
+    month = Math.round(value)
     if Date.validateDay(d.getDate(), d.getFullYear(), month)
       d.setMonth(month)
       date.setContent(generateDate(d))
@@ -175,10 +177,13 @@ createDate = (d) ->
       date.setContent(generateDate(d))
 
   MY_CENTER.on '日', (value) ->
-    day = Math.round(value / DAY_STEP + 1)
+    day = Math.round(value)
     if Date.validateDay(day, d.getFullYear(), d.getMonth())
       d.setDate(day)
       date.setContent(generateDate(d))
+
+  MY_CENTER.on 'update:date', (date) ->
+    date.setContent(generateDate(date))
 
   return dateContainer
 
@@ -207,12 +212,12 @@ createTime = (t) ->
   )
 
   MY_CENTER.on '时', (value) ->
-    hours = Math.round(value / HOUR_STEP)
+    hours = Math.round(value)
     t.setHours(hours)
     time.setContent(generateTime(t))
 
   MY_CENTER.on '分', (value) ->
-    minutes = Math.round(value / MINUTE_STEP)
+    minutes = Math.round(value)
     t.setMinutes(minutes)
     time.setContent(generateTime(t))
 
@@ -322,16 +327,18 @@ dateLayout = new SequentialLayout(
   direction: 1
 )
 
-dateLayout.sequenceFrom [
-  createSlide('月', [0, BAR_WIDTH], MONTH_STEP, getInitial(alarm.getMonth(), MONTH_STEP)),
+dateLayoutItems = [
+  createSlide('月', [0, 11], MONTH_STEP, getInitial(alarm.getMonth(), MONTH_STEP)),
   createDate(alarm),
-  createSlide('日', [0, BAR_WIDTH], DAY_STEP, getInitial(alarm.getDate(), DAY_STEP)),
-  createSlide('时', [0, BAR_WIDTH], HOUR_STEP, getInitial(alarm.getHours(), HOUR_STEP)),
+  createSlide('日', [1, 31], DAY_STEP, getInitial(alarm.getDate(), DAY_STEP)),
+  createSlide('时', [0, 23], HOUR_STEP, getInitial(alarm.getHours(), HOUR_STEP)),
   createTime(alarm),
-  createSlide('分', [0, BAR_WIDTH], MINUTE_STEP, getInitial(alarm.getMinutes(), MINUTE_STEP)),
+  createSlide('分', [0, 59], MINUTE_STEP, getInitial(alarm.getMinutes(), MINUTE_STEP)),
   createFive('clock'),
   createFive('cycling'),
 ]
+
+dateLayout.sequenceFrom dateLayoutItems
 
 dateLayoutContainer = new ContainerSurface(
   size: [undefined, undefined]
@@ -354,8 +361,23 @@ container.add(CENTER_MODIFIER).add layout
 page.add container
 
 page.onEvent 'beforeEnter', (memo) ->
-  if memo && memo.isRepeated # passed a Memo object
-    layoutItems[0].input.setValue memo.get('name')
+  if memo && memo.isRepeated # passed a Memo object ==> EDIT
+    # update the value of NAME input
+    page.memo = memo
+    MY_CENTER.emit 'update:header', memo.get('name')
+
+    # update the central HTML of current date
+    date = memo.get('date') || new Date()
+    MY_CENTER.emit 'update:date', date 
+
+    # update sliders
+    ## oh shit...
+    #monthP = getInitial(date.getMonth(), MONTH_STEP)
+    #dayP = getInitial(date.getDate(), DAY_STEP)
+    #hourP = getInitial(date.getHours(), HOUR_STEP)
+    #minuteP = getInitial(date.getMinutes(), MINUTE_STEP)
+    
+    #dateLayoutItems[0].setPosition
     # TODO: update date...
 
 module.exports = page

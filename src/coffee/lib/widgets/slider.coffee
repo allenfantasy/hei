@@ -9,14 +9,13 @@ ContainerSurface = require 'famous/surfaces/ContainerSurface'
 
 Transitionable.registerMethod 'snap', SnapTransition
 
-Slider = (barSize, thumbRadius, range, step, initValue, barColor, thumbColor) ->
+Slider = (barSize, thumbRadius, valueRange, step, initValue, barColor, thumbColor) ->
   View.call this
 
   barSidePad = (window.innerWidth - barSize[0])/2
   @value = initValue || 0
-  @range = range
+  @valueRange = valueRange
   @barSize = barSize
-  console.log @range
 
   @_thumb = new Surface(
     size: [thumbRadius * 2, thumbRadius * 2]
@@ -64,11 +63,21 @@ Slider:: = Object.create(View::)
 Slider::constructor = Slider
 
 Slider::onSlide = (type, handler) ->
-  $ = @
+  v = @valueRange
+  p = [0, @barSize[0]]
   @_draggable.on type, (event) ->
-    event.value = $.range[0] + event.position[0] * $.barSize[0] / ($.range[1] - $.range[0])
-    handler(event)
+    handler p2v(p, v, event.position[0])
 
-#Slider::set = (value) ->
+# private
+
+# physical position ==> actual value
+p2v = (p, v, position) ->
+  ratio = (position - p[0]) / (p[1] - p[0])
+  v[0] + (v[1] - v[0]) * ratio
+
+# actual value ==> physical position
+v2p = (p, v, value) ->
+  ratio = (value - v[0]) / (v[1] - v[0])
+  p[0] + (p[1] - p[0]) * ratio
 
 module.exports = Slider
