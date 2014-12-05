@@ -6,6 +6,7 @@ ImageSurface = require 'famous/surfaces/ImageSurface'
 ContainerSurface = require 'famous/surfaces/ContainerSurface'
 SequentialLayout = require 'famous/views/SequentialLayout'
 EventHandler = require 'famous/core/EventHandler'
+FlexibleLayout = require 'famous/views/FlexibleLayout'
 
 Page = require '../lib/page.coffee'
 Slider = require '../lib/widgets/Slider.coffee'
@@ -53,6 +54,9 @@ DAY_STEP = BAR_WIDTH / 30
 HOUR_STEP = BAR_WIDTH / 23
 MINUTE_STEP = BAR_WIDTH / 59
 
+SWITCHON_IMAGE_URL = './img/switch_on.png'
+SWITCHOFF_IMAGE_URL = './img/switch_off.png'
+
 alarm = new Date()
 alarm.setSeconds(0)
 clock = [0, 0, 0, 0, 0]
@@ -64,15 +68,17 @@ container = new ContainerSurface(
     color: GREY
 )
 
-layout = new SequentialLayout(
+initialRatios = [1, 0, 9]
+finalRatios = [1, 8, 1]
+alarmToggle = false
+layout = new FlexibleLayout(
   direction: 1
+  ratios: initialRatios
 )
 
 createHeader = (content) ->
   headerContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
-    properties:
-      boxShadow: BOX_SHADOW
   )
 
   headerContainer.input = new InputSurface(
@@ -89,19 +95,19 @@ createHeader = (content) ->
   headerContainer.add(LEFT_MODIFIER).add headerContainer.input
 
   switcher = new ImageSurface(
-    content: './img/switch_off.png'
+    content: SWITCHOFF_IMAGE_URL
     size: [25, 30]
   )
 
   headerContainer.add(RIGHT_MODIFIER).add switcher
 
   switcher.on 'click', ->
-    switcherContent = switcher._imageUrl
-    if /off/.test switcherContent
-      switcherContentReplaced = switcherContent.replace(/off/, "on")
-    else
-      switcherContentReplaced = switcherContent.replace(/on/, "off")
-    switcher.setContent(switcherContentReplaced)
+    ratios = if alarmToggle then initialRatios else finalRatios;
+    layout.setRatios(ratios, {curve : 'easeOut', duration : 500});
+    alarmToggle = !alarmToggle;
+
+    switcherContent = if alarmToggle then SWITCHON_IMAGE_URL else SWITCHOFF_IMAGE_URL
+    switcher.setContent switcherContent
 
   return headerContainer
 
@@ -289,7 +295,6 @@ createFooter = ->
     size: [window.innerWidth, LINE_HEIGHT]
     properties:
       fontSize: FONT_SIZE
-      boxShadow: BOX_SHADOW
   )
 
   footer.add(new Modifier(
@@ -313,8 +318,11 @@ createFooter = ->
 getInitial = (index, step) ->
   return index * step
 
-layoutItems = [
-  createHeader(''),
+dateLayout = new SequentialLayout(
+  direction: 1
+)
+
+dateLayout.sequenceFrom [
   createSlide('月', [0, BAR_WIDTH], MONTH_STEP, getInitial(alarm.getMonth(), MONTH_STEP)),
   createDate(alarm),
   createSlide('日', [0, BAR_WIDTH], DAY_STEP, getInitial(alarm.getDate(), DAY_STEP)),
@@ -323,6 +331,19 @@ layoutItems = [
   createSlide('分', [0, BAR_WIDTH], MINUTE_STEP, getInitial(alarm.getMinutes(), MINUTE_STEP)),
   createFive('clock'),
   createFive('cycling'),
+]
+
+dateLayoutContainer = new ContainerSurface(
+  size: [undefined, undefined]
+  properties:
+    overflow: 'hidden'
+)
+
+dateLayoutContainer.add dateLayout
+
+layoutItems = [
+  createHeader(''),
+  dateLayoutContainer,
   createFooter()
 ]
 
