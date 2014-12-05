@@ -128,7 +128,8 @@ class Base
     # only localStorage now
     # TODO: add remote way
     name = @_localStorageName
-    records = JSON.parse(window.localStorage.getItem(name) || '[]')
+    records = JSON.parse(window.localStorage.getItem(name) or '[]')
+    # BUG: always push
     if method is 'create'
       records.push model
     else

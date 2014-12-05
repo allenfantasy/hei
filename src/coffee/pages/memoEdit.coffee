@@ -58,6 +58,15 @@ MINUTE_STEP = BAR_WIDTH / 59
 SWITCHON_IMAGE_URL = './img/switch_on.png'
 SWITCHOFF_IMAGE_URL = './img/switch_off.png'
 
+WEEKS =
+  Mon: '周一'
+  Tue: '周二'
+  Wed: '周三'
+  Thu: '周四'
+  Fri: '周五'
+  Sat: '周六'
+  Sun: '周日'
+
 page.memo = new Memo()  # this is the default one
 
 name = ''
@@ -136,14 +145,13 @@ createSlide = (type, range, step, initial) ->
     MY_CENTER.emit type, value
 
   MY_CENTER.on "update:#{type}", (value) ->
-    console.log value
     slider.setValue value
 
   slideContainer.add(CENTER_MODIFIER).add slider
 
   return slideContainer
 
-createDate = (d) ->
+createDate = ->
   dateContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
     properties:
@@ -152,7 +160,7 @@ createDate = (d) ->
   )
 
   dateSurface = new Surface(
-    content: generateDate(d)
+    content: generateDate(date)
     size: TRUE_SIZE
   )
 
@@ -167,11 +175,12 @@ createDate = (d) ->
   )
 
   last.on 'click', ->
-    d.addYears(-1)
-    dateSurface.setContent(generateDate(d))
+    date.addYears(-1)
+    dateSurface.setContent(generateDate(date))
 
   next.on 'click', ->
-    dateSurface.setContent(generateDate(d))
+    date.addYears(1)
+    dateSurface.setContent(generateDate(date))
 
   dateContainer.add(LEFT_MODIFIER).add last
 
@@ -181,19 +190,19 @@ createDate = (d) ->
 
   MY_CENTER.on 'month', (value) ->
     month = Math.round(value)
-    if Date.validateDay(d.getDate(), d.getFullYear(), month)
-      d.setMonth(month)
-      dateSurface.setContent(generateDate(d))
+    if Date.validateDay(date.getDate(), date.getFullYear(), month)
+      date.setMonth(month)
+      dateSurface.setContent(generateDate(date))
     else
-      d.setMonth(month)
-      d.setDate(Date.getDaysInMonth(d.getFullYear(), month))
-      dateSurface.setContent(generateDate(d))
+      date.setMonth(month)
+      date.setDate(Date.getDaysInMonth(date.getFullYear(), month))
+      dateSurface.setContent(generateDate(date))
 
   MY_CENTER.on 'day', (value) ->
     day = Math.round(value)
-    if Date.validateDay(day, d.getFullYear(), d.getMonth())
-      d.setDate(day)
-      dateSurface.setContent(generateDate(d))
+    if Date.validateDay(day, date.getFullYear(), date.getMonth())
+      date.setDate(day)
+      dateSurface.setContent(generateDate(date))
 
   MY_CENTER.on 'update:date', (date) ->
     dateSurface.setContent(generateDate(date))
@@ -201,23 +210,16 @@ createDate = (d) ->
   return dateContainer
 
 generateDate = (d) ->
-  weekName = switch d.toFormat('DDD')
-    when 'Mon' then '周一'
-    when 'Tue' then '周二'
-    when 'Wed' then '周三'
-    when 'Thu' then '周四'
-    when 'Fri' then '周五'
-    when 'Sat' then '周六'
-    when 'Sun' then '周日'
+  weekName = WEEKS[d.toFormat('DDD')]
   return d.toYMD('.')+'<span class="week-name">'+weekName+'</span>'
 
-createTime = (t) ->
+createTime = ->
   timeContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
   )
 
   time = new Surface(
-    content: generateTime(t)
+    content: generateTime(date)
     size: TRUE_SIZE
     properties:
       fontSize: TIME_FONT_SIZE
@@ -226,13 +228,13 @@ createTime = (t) ->
 
   MY_CENTER.on 'hour', (value) ->
     hours = Math.round(value)
-    t.setHours(hours)
-    time.setContent(generateTime(t))
+    date.setHours(hours)
+    time.setContent(generateTime(date))
 
   MY_CENTER.on 'minute', (value) ->
     minutes = Math.round(value)
-    t.setMinutes(minutes)
-    time.setContent(generateTime(t))
+    date.setMinutes(minutes)
+    time.setContent(generateTime(date))
 
   timeContainer.add(CENTER_MODIFIER).add time
 
@@ -356,10 +358,10 @@ dateLayout = new SequentialLayout(
 # TODO: get const
 dateLayoutItems = [
   createSlide 'month', [0, 11], MONTH_STEP, date.getMonth()
-  createDate date
+  createDate()
   createSlide 'day', [1, 31], DAY_STEP, date.getDate()
   createSlide 'hour', [0, 23], HOUR_STEP, date.getHours()
-  createTime date
+  createTime()
   createSlide 'minute', [0, 59], MINUTE_STEP, date.getMinutes()
   createFive 'alarm'
   createFive 'repeat'
@@ -388,23 +390,24 @@ container.add(CENTER_MODIFIER).add layout
 page.add container
 
 page.onEvent 'beforeEnter', (memo) ->
+  console.log memo
   if memo && memo.isRepeated # passed a Memo object ==> EDIT
-    # update the value of NAME input
-    page.memo = memo || page.memo
-    MY_CENTER.emit 'update:header', memo.get('name')
+    page.memo = memo
+  else # ==> NEW
+    page.memo = new Memo()
 
-    # update the central HTML of current date
-    date = memo.get('date') || new Date()
-    MY_CENTER.emit 'update:date', date
+  memo = memo || page.memo
+  name = memo.get('name')
+  date = memo.get('date') || new Date()
+  dateObj =
+    month: date.getMonth()
+    day: date.getDate()
+    hour: date.getHours()
+    minute: date.getMinutes()
 
-    # update date sliders
-    dateObj =
-      month: date.getMonth()
-      day: date.getDate()
-      hour: date.getHours()
-      minute: date.getMinutes()
+  MY_CENTER.emit 'update:header', name
+  MY_CENTER.emit 'update:date', date
 
-    ['month', 'day', 'hour', 'minute'].forEach (type) ->
-      MY_CENTER.emit "update:#{type}", dateObj[type]
-
+  ['month', 'day', 'hour', 'minute'].forEach (type) ->
+    MY_CENTER.emit "update:#{type}", dateObj[type]
 module.exports = page

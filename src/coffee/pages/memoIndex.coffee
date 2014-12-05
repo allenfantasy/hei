@@ -88,6 +88,10 @@ buildItem = (memo, scroll) ->
       lineHeight: SIZE_CONST.ITEM.NetHeight + 'px'
       paddingLeft: SIZE_CONST.ITEM.NameLeftPad + 'px'
   )
+
+  nameSection.on 'click', ->
+    page.jumpTo 'editMemo', memo 
+
   buttonSection = new ContainerSurface(
     size: [SIZE_CONST.ITEM.ButtonSectionWidth, undefined]
   )
@@ -102,18 +106,12 @@ buildItem = (memo, scroll) ->
   itemWrapper.pipe scroll
   itemWrapper
 
-#memos = [new Memo({
-  #name: '每周论坛',
-  #date: new Date(),
-  #repeated: true
-#}), new Memo({
-  #name: '每周论坛2',
-  #date: new Date(),
-  #repeated: true
-#})]
-#memos.forEach (memo) ->
-#  console.log memo.get('id')
-memos = []
+# history memos
+memos = JSON.parse(window.localStorage.getItem(Memo.STORAGE_NAME) or '[]').map (data) ->
+  data.date = new Date(data.date)
+  new Memo data
+  #memo = new Memo data
+  #memo
 
 page = new Page(
   name: 'memoIndex'
@@ -159,14 +157,20 @@ container.add addButtonMod
 page.add container
 
 page.onEvent 'beforeEnter', (memo) ->
-  console.log memo
+  #console.log memos
+  #console.log memo
   if memo and memo.isRepeated # duck typing
-    # if memo exists in current memos, update value
-    # else push
-    console.log 'new demo coming'
-    console.log memo
-    memos.push(memo)
-    memoRenderItems.push(buildItem memo, memoList)
+    idx = memos.map((m) ->
+      m.get('id')
+    ).indexOf memo.get('id')
+    if idx isnt -1 # memo exists
+      memos[idx] = memo
+      memoRenderItems[idx] = buildItem memo, memoList
+      memoList.sequenceFrom memoRenderItems
+    else
+      memos.push(memo)
+      memoRenderItems.push(buildItem memo, memoList)
+
 
 page.onEvent 'afterEnter', (data) ->
   console.log 'after enter'

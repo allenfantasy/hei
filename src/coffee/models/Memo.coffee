@@ -13,13 +13,16 @@ class Memo extends Base
   constructor: (obj) ->
     obj = merge(Memo.DEFAULTS, obj or {})
     super obj
-    @_localStorageName = 'hei_memos'
-    @set('id', new Date() - 0 + '') # use timestamp as id
-    # TODO: check 'repeated' validity
+    @_localStorageName = Memo.STORAGE_NAME
+    # use timestamp as id
+    @set('id', new Date() - 0 + '') unless @get('id')
     return
 
   isRepeated: ->
     if @_data['repeated'] then true else false
+
+  isEqual: (other) ->
+    @get('id') is other.get('id')
 
 Memo.DEFAULTS =
   name: ''
@@ -35,5 +38,7 @@ Memo.REPEATED_STATE = [
   'month'
   'year'
 ]
+
+Memo.STORAGE_NAME = 'hei_memos'
 
 module.exports = Memo
