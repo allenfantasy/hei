@@ -82,7 +82,7 @@ buildCircleButton = (radius, isRepeated) ->
       pointerEvents: 'none'
   )
 
-  container.add(new Modifier(origin: [.5, .5], align: [.5, .5])).add container.button
+  container.add container.button
 
   return container
 
