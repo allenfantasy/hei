@@ -4,6 +4,10 @@ StateModifier = require 'famous/modifiers/StateModifier'
 Transform = require 'famous/core/Transform'
 Modifier = require 'famous/core/Modifier'
 Timer = require 'famous/utilities/Timer'
+Easing = require 'famous/transitions/Easing'
+TweenTransition = require 'famous/transitions/TweenTransition'
+
+TweenTransition.registerCurve 'outQuart', Easing.outQuart
 
 BLUE = '#41c4d3'
 CENTER_STATEMODIFIER = new StateModifier(
@@ -71,11 +75,8 @@ FlatButton::click = (handler) ->
     x = - $.size[0] / 2 + e.offsetX
     y = - $.size[1] / 2 + e.offsetY
     scale = $.size[0] / $._ink_size
-    $._button.setProperties(
-      backgroundColor: '#00ffff'
-    )
     $._inkModifier.setTransform Transform.translate(x, y, 0)
-    $._inkModifier.setTransform Transform.scale(scale, scale, 0), {duration: 200, curve: 'linear'}, handler
+    $._inkModifier.setTransform Transform.scale(scale, scale, 0), {duration: 550, curve: 'outQuart'}, handler
     Timer.after (->
       $._button.setProperties(
         backgroundColor: 'white'
