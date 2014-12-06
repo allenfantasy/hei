@@ -83,8 +83,8 @@ container = new ContainerSurface(
     color: GREY
 )
 
-initialRatios = [1, 0, 9]
-finalRatios = [1, 8, 1]
+initialRatios = [1, 0, 9] # no time settings
+finalRatios = [1, 8, 1]   # has time settings
 alarmToggle = false
 layout = new FlexibleLayout(
   direction: 1
@@ -120,16 +120,22 @@ createHeader = () ->
 
   headerContainer.add(RIGHT_MODIFIER).add switcher
 
-  switcher.on 'click', ->
-    ratios = if alarmToggle then initialRatios else finalRatios;
-    layout.setRatios(ratios, {curve : 'easeOut', duration : 500});
-    alarmToggle = !alarmToggle;
-
+  switchTimeSettings = ->
+    ratios = if alarmToggle then finalRatios else initialRatios
+    layout.setRatios(ratios, {curve : 'easeOut', duration : 500})
     switcherContent = if alarmToggle then SWITCHON_IMAGE_URL else SWITCHOFF_IMAGE_URL
     switcher.setContent switcherContent
 
+  switcher.on 'click', ->
+    alarmToggle = !alarmToggle
+    switchTimeSettings()
+
   MY_CENTER.on 'update:header', (name) ->
     input.setValue name
+
+  MY_CENTER.on 'update:switcher', (hasTime) ->
+    alarmToggle = hasTime
+    switchTimeSettings()
 
   return headerContainer
 
@@ -237,6 +243,9 @@ createTime = ->
   MY_CENTER.on 'minute', (value) ->
     minutes = value
     date.setMinutes(minutes)
+    time.setContent(generateTime(date))
+
+  MY_CENTER.on 'update:time', (date) ->
     time.setContent(generateTime(date))
 
   timeContainer.add(CENTER_MODIFIER).add time
@@ -389,7 +398,6 @@ container.add(CENTER_MODIFIER).add layout
 page.add container
 
 page.onEvent 'beforeEnter', (memo) ->
-  console.log memo
   if memo && memo.isRepeated # passed a Memo object ==> EDIT
     page.memo = memo
   else # ==> NEW
@@ -397,6 +405,7 @@ page.onEvent 'beforeEnter', (memo) ->
 
   memo = memo || page.memo
   name = memo.get('name')
+  hasTime = memo.get('hasTime')
   date = memo.get('date') || new Date()
   dateObj =
     month: date.getMonth()
@@ -405,7 +414,9 @@ page.onEvent 'beforeEnter', (memo) ->
     minute: date.getMinutes()
 
   MY_CENTER.emit 'update:header', name
+  MY_CENTER.emit 'update:switcher', hasTime
   MY_CENTER.emit 'update:date', date
+  MY_CENTER.emit 'update:time', date
 
   ['month', 'day', 'hour', 'minute'].forEach (type) ->
     MY_CENTER.emit "update:#{type}", dateObj[type]

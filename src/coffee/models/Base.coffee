@@ -121,7 +121,9 @@ class Base
       @set obj
       method = if @isNew() then 'create' else 'update'
       # save to localStorage
+      @set('id', new Date() - 0 + '') if @isNew() # use timestamp as id, set when created (like Rails)
       @sync method, this, options
+      # NOTE: if failed ... should unset 'id' attribute
       success(this)
     this
 
@@ -135,7 +137,7 @@ class Base
       records.push model
     else
       modelIndex = records.map((obj) ->
-        obj.id()
+        obj.id
       ).indexOf model.id()
       records[modelIndex] = model# if model.eql(records[modelIndex])
 
