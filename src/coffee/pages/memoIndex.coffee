@@ -41,7 +41,7 @@ SIZE_CONST =
     RightPad: 60 * HEIGHT_RATIO
     BottomPad: 60 * HEIGHT_RATIO
     Size: 155 * HEIGHT_RATIO
-    FontSize: 100 * HEIGHT_RATIO
+    FontSize: 155 / 2 * HEIGHT_RATIO
 
 CHINESE_WEEKDAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
