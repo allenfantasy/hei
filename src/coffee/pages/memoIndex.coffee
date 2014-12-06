@@ -57,14 +57,17 @@ buildCircleButton = (radius, isRepeated) ->
   new Surface(
     size: [radius * 2, radius * 2]
     properties:
+      textAlign: 'center'
       borderRadius: radius + 'px'
       border: '1px solid #9da9ab'
+      lineHeight: "#{radius * 2}px"
   )
 
 buildItem = (memo, scroll) ->
   name = memo.get('name')
   datetime = memo.get('date')
   isRepeated = memo.isRepeated()
+  isFinished = false
   itemWrapper = new ContainerSurface(
     size: [undefined, SIZE_CONST.ITEM.NetHeight + SIZE_CONST.ITEM.BorderWidth]
     classes: if isRepeated then ['item', 'repeated'] else ['item']
@@ -90,7 +93,7 @@ buildItem = (memo, scroll) ->
   )
 
   nameSection.on 'click', ->
-    page.jumpTo 'editMemo', memo 
+    page.jumpTo 'editMemo', memo
 
   buttonSection = new ContainerSurface(
     size: [SIZE_CONST.ITEM.ButtonSectionWidth, undefined]
@@ -104,6 +107,27 @@ buildItem = (memo, scroll) ->
   itemLayout.sequenceFrom [dateTimeSection, nameSection, buttonSection]
   itemWrapper.add itemLayout
   itemWrapper.pipe scroll
+
+  button.on 'click', ->
+    if isFinished
+      this.setContent('')
+      nameSection.setProperties(
+        textDecoration: 'none'
+        color: 'black'
+      )
+
+    else
+      this.setContent('√')
+      nameSection.setProperties(
+        textDecoration: 'line-through'
+        color: '#888888'
+      )
+    isFinished = !isFinished
+
+
+
+
+
   itemWrapper
 
 # history memos
