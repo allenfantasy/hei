@@ -65,7 +65,7 @@ Slider::constructor = Slider
 Slider::onSlide = (type, handler) ->
   $ = @
   @_draggable.on type, (event) ->
-    handler p2v($._p, $._v, event.position[0])
+    handler Math.round p2v($._p, $._v, event.position[0])
 
 # change position
 Slider::setValue = (value) ->
@@ -80,7 +80,7 @@ p2v = (p, v, position) ->
 
 # actual value ==> physical position
 v2p = (p, v, value) ->
-  ratio = (value - v[0]) / (v[1] - v[0])
+  ratio = (Math.round value - v[0]) / (v[1] - v[0])
   p[0] + (p[1] - p[0]) * ratio
 
 module.exports = Slider

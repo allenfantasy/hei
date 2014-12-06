@@ -12,6 +12,7 @@ StateModifier = require 'famous/modifiers/StateModifier'
 Page = require '../lib/page.coffee'
 Slider = require '../lib/widgets/Slider.coffee'
 Memo = require '../models/Memo.coffee'
+FlatButton = require '../lib/widgets/FlatButton.coffee'
 
 require 'date-utils'
 
@@ -190,17 +191,18 @@ createDate = ->
   dateContainer.add(RIGHT_MODIFIER).add next
 
   MY_CENTER.on 'month', (value) ->
-    month = Math.round(value)
+    month = value
     if Date.validateDay(date.getDate(), date.getFullYear(), month)
       date.setMonth(month)
       dateSurface.setContent(generateDate(date))
+      MY_CENTER.emit('update:day', date.getDate())
     else
       date.setMonth(month)
       date.setDate(Date.getDaysInMonth(date.getFullYear(), month))
       dateSurface.setContent(generateDate(date))
 
   MY_CENTER.on 'day', (value) ->
-    day = Math.round(value)
+    day = value
     if Date.validateDay(day, date.getFullYear(), date.getMonth())
       date.setDate(day)
       dateSurface.setContent(generateDate(date))
@@ -228,12 +230,12 @@ createTime = ->
   )
 
   MY_CENTER.on 'hour', (value) ->
-    hours = Math.round(value)
+    hours = value
     date.setHours(hours)
     time.setContent(generateTime(date))
 
   MY_CENTER.on 'minute', (value) ->
-    minutes = Math.round(value)
+    minutes = value
     date.setMinutes(minutes)
     time.setContent(generateTime(date))
 
@@ -300,110 +302,51 @@ createFooter = ->
     direction: 0
   )
 
-  cancelButton = new Surface(
+  cancelButton = new FlatButton(
+    size: [window.innerWidth / 2, LINE_HEIGHT]
     content: '取消'
-    properties:
-      textAlign: 'center'
-      lineHeight: LINE_HEIGHT + 'px'
-      fontSize: FONT_SIZE
-      border: '1px solid #e6e6e6'
+    color: BLUE
+    fontSize: FONT_SIZE
   )
 
-  cancelButtonContainer = new ContainerSurface(
-    size: [window.innerWidth/2, LINE_HEIGHT]
-    properties:
-      overflow: 'hidden'
-  )
-
-  inkSurface = new Surface(
-    size: [50, 50]
-    properties:
-      borderRadius: '50%'
-      backgroundColor: BLUE
-      pointerEvents: 'none'
-      display: 'none'
-  )
-
-  inkModifier = new StateModifier(
-    opacity: 0.3
-  )
-
-  ink2Surface = new Surface(
-    size: [50, 50]
-    properties:
-      borderRadius: '50%'
-      backgroundColor: BLUE
-      pointerEvents: 'none'
-      display: 'none'
-  )
-
-  ink2Modifier = new StateModifier(
-    opacity: 0.3
-  )
-
-  confirmButton = new Surface(
+  confirmButton = new FlatButton(
+    size: [window.innerWidth / 2, LINE_HEIGHT]
     content: '确认'
-    properties:
-      textAlign: 'center'
-      lineHeight: LINE_HEIGHT + 'px'
-      fontSize: FONT_SIZE
-      border: '1px solid #e6e6e6'
+    color: BLUE
+    fontSize: FONT_SIZE
   )
-
-  confirmButtonContainer = new ContainerSurface(
-    size : [window.innerWidth/2, LINE_HEIGHT]
-    properties:
-      overflow: 'hidden'
-  )
-
-  cancelButtonContainer.add(new Modifier(align: [0.5, 0.5],origin: [0.5, 0.5])).add(inkModifier).add inkSurface
-  cancelButtonContainer.add(CENTER_MODIFIER).add cancelButton
-
-  confirmButtonContainer.add(new Modifier(align: [0.5, 0.5],origin: [0.5, 0.5])).add(ink2Modifier).add ink2Surface
-  confirmButtonContainer.add(CENTER_MODIFIER).add confirmButton
 
   footer.sequenceFrom [
-    cancelButtonContainer
-    confirmButtonContainer
+    cancelButton
+    confirmButton
   ]
 
-  cancelButton.on 'click', (e) ->
-    console.log e
-    inkSurface.setProperties(
-      display: 'inline'
-      )
-    inkModifier.setTransform Transform.translate(-window.innerWidth / 4 + e.offsetX, - LINE_HEIGHT/ 2 + e.offsetY, 0)
-    inkModifier.setTransform Transform.scale(window.innerWidth / 100, window.innerWidth / 100 , 0) , {duration: 500, curve: 'linear'}, ->
-      page.jumpTo 'memoIndex' # do nothing
+  cancelButton.click ->
+    page.jumpTo 'memoIndex' # do nothing
 
-  confirmButton.on 'click', (e) ->
-    ink2Surface.setProperties(
-      display: 'inline'
+  confirmButton.click ->
+    if alarmToggle
+      attr =
+        name: name
+        hasTime: true
+        date: date
+        repeated: if repeatStateIndex is -1 then false else Memo.REPEATED_STATE[repeatStateIndex]
+        alarm: alarm
+    else
+      attr =
+        name: name
+        hasTime: false
+
+    page.memo.save(
+      attr
+    ,
+      validate: true
+      success: (memo) ->
+        page.jumpTo 'memoIndex', memo
+      error: ->
+        # TODO
+        window.alert 'something fucked up'
     )
-    ink2Modifier.setTransform Transform.translate(-window.innerWidth / 4 + e.offsetX, - LINE_HEIGHT/ 2 + e.offsetY, 0)
-    ink2Modifier.setTransform Transform.scale(window.innerWidth / 100, window.innerWidth / 100 , 0), {duration: 500, curve: 'linear'}, ->
-      if alarmToggle
-        attr =
-          name: name
-          hasTime: true
-          date: date
-          repeated: if repeatStateIndex is -1 then false else Memo.REPEATED_STATE[repeatStateIndex]
-          alarm: alarm
-      else
-        attr =
-          name: name
-          hasTime: false
-
-      page.memo.save(
-        attr
-      ,
-        validate: true
-        success: (memo) ->
-          page.jumpTo 'memoIndex', memo
-        error: ->
-          # TODO
-          window.alert 'something fucked up'
-      )
 
   return footer
 
