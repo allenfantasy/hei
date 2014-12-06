@@ -296,14 +296,20 @@ deactivateIcon = (icon, type, index) ->
 createFooter = ->
   cancelButton = new Surface(
     content: '取消'
-    size: TRUE_SIZE
+    size: [window.innerWidth/2, undefined]
+    properties:
+      textAlign: 'center'
+      lineHeight: LINE_HEIGHT + 'px'
+      border: '1px solid #e6e6e6'
   )
 
   confirmButton = new Surface(
     content: '确认'
-    size : TRUE_SIZE
+    size : [window.innerWidth/2, undefined]
     properties:
       textAlign: 'center'
+      lineHeight: LINE_HEIGHT + 'px'
+      border: '1px solid #e6e6e6'
   )
 
   footer = new ContainerSurface(
