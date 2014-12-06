@@ -399,7 +399,6 @@ container.add(CENTER_MODIFIER).add layout
 page.add container
 
 page.onEvent 'beforeEnter', (memo) ->
-  console.log memo
   if memo && memo.isRepeated # passed a Memo object ==> EDIT
     page.memo = memo
   else # ==> NEW
