@@ -7,6 +7,7 @@ ContainerSurface = require 'famous/surfaces/ContainerSurface'
 SequentialLayout = require 'famous/views/SequentialLayout'
 EventHandler = require 'famous/core/EventHandler'
 FlexibleLayout = require 'famous/views/FlexibleLayout'
+StateModifier = require 'famous/modifiers/StateModifier'
 
 Page = require '../lib/page.coffee'
 Slider = require '../lib/widgets/Slider.coffee'
@@ -294,66 +295,115 @@ deactivateIcon = (icon, type, index) ->
   icon.setContent("./img/#{type}off#{index}.png")
 
 createFooter = ->
+  footer = new SequentialLayout(
+    size: [undefined, LINE_HEIGHT]
+    direction: 0
+  )
+
   cancelButton = new Surface(
     content: '取消'
-    size: [window.innerWidth/2, undefined]
     properties:
       textAlign: 'center'
       lineHeight: LINE_HEIGHT + 'px'
+      fontSize: FONT_SIZE
       border: '1px solid #e6e6e6'
+  )
+
+  cancelButtonContainer = new ContainerSurface(
+    size: [window.innerWidth/2, LINE_HEIGHT]
+    properties:
+      overflow: 'hidden'
+  )
+
+  inkSurface = new Surface(
+    size: [50, 50]
+    properties:
+      borderRadius: '50%'
+      backgroundColor: BLUE
+      pointerEvents: 'none'
+      display: 'none'
+  )
+
+  inkModifier = new StateModifier(
+    opacity: 0.3
+  )
+
+  ink2Surface = new Surface(
+    size: [50, 50]
+    properties:
+      borderRadius: '50%'
+      backgroundColor: BLUE
+      pointerEvents: 'none'
+      display: 'none'
+  )
+
+  ink2Modifier = new StateModifier(
+    opacity: 0.3
   )
 
   confirmButton = new Surface(
     content: '确认'
-    size : [window.innerWidth/2, undefined]
     properties:
       textAlign: 'center'
       lineHeight: LINE_HEIGHT + 'px'
+      fontSize: FONT_SIZE
       border: '1px solid #e6e6e6'
   )
 
-  footer = new ContainerSurface(
-    size: [window.innerWidth, LINE_HEIGHT]
+  confirmButtonContainer = new ContainerSurface(
+    size : [window.innerWidth/2, LINE_HEIGHT]
     properties:
-      fontSize: FONT_SIZE
+      overflow: 'hidden'
   )
 
-  footer.add(new Modifier(
-    align: [0.25, 0.5]
-    origin: [0.5, 0.5]
-  )).add(cancelButton)
+  cancelButtonContainer.add(new Modifier(align: [0.5, 0.5],origin: [0.5, 0.5])).add(inkModifier).add inkSurface
+  cancelButtonContainer.add(CENTER_MODIFIER).add cancelButton
 
-  footer.add(new Modifier(
-    align: [0.75, 0.5]
-    origin: [0.5, 0.5]
-  )).add(confirmButton)
+  confirmButtonContainer.add(new Modifier(align: [0.5, 0.5],origin: [0.5, 0.5])).add(ink2Modifier).add ink2Surface
+  confirmButtonContainer.add(CENTER_MODIFIER).add confirmButton
 
-  cancelButton.on 'click', ->
-    page.jumpTo 'memoIndex' # do nothing
+  footer.sequenceFrom [
+    cancelButtonContainer
+    confirmButtonContainer
+  ]
 
-  confirmButton.on 'click', ->
-    if alarmToggle
-      attr =
-        name: name
-        hasTime: true
-        date: date
-        repeated: if repeatStateIndex is -1 then false else Memo.REPEATED_STATE[repeatStateIndex]
-        alarm: alarm
-    else
-      attr =
-        name: name
-        hasTime: false
+  cancelButton.on 'click', (e) ->
+    console.log e
+    inkSurface.setProperties(
+      display: 'inline'
+      )
+    inkModifier.setTransform Transform.translate(-window.innerWidth / 4 + e.offsetX, - LINE_HEIGHT/ 2 + e.offsetY, 0)
+    inkModifier.setTransform Transform.scale(window.innerWidth / 100, window.innerWidth / 100 , 0) , {duration: 500, curve: 'linear'}, ->
+      page.jumpTo 'memoIndex' # do nothing
 
-    page.memo.save(
-      attr
-    ,
-      validate: true
-      success: (memo) ->
-        page.jumpTo 'memoIndex', memo
-      error: ->
-        # TODO
-        window.alert 'something fucked up'
+  confirmButton.on 'click', (e) ->
+    ink2Surface.setProperties(
+      display: 'inline'
     )
+    ink2Modifier.setTransform Transform.translate(-window.innerWidth / 4 + e.offsetX, - LINE_HEIGHT/ 2 + e.offsetY, 0)
+    ink2Modifier.setTransform Transform.scale(window.innerWidth / 100, window.innerWidth / 100 , 0), {duration: 500, curve: 'linear'}, ->
+      if alarmToggle
+        attr =
+          name: name
+          hasTime: true
+          date: date
+          repeated: if repeatStateIndex is -1 then false else Memo.REPEATED_STATE[repeatStateIndex]
+          alarm: alarm
+      else
+        attr =
+          name: name
+          hasTime: false
+
+      page.memo.save(
+        attr
+      ,
+        validate: true
+        success: (memo) ->
+          page.jumpTo 'memoIndex', memo
+        error: ->
+          # TODO
+          window.alert 'something fucked up'
+      )
 
   return footer
 
