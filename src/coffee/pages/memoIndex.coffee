@@ -4,6 +4,7 @@ Surface = require 'famous/core/Surface'
 ContainerSurface = require 'famous/surfaces/ContainerSurface'
 Scrollview = require 'famous/views/Scrollview'
 FlexibleLayout = require 'famous/views/FlexibleLayout'
+ImageSurface = require 'famous/surfaces/ImageSurface'
 
 Page = require '../lib/page.coffee'
 FloatButton = require '../lib/widgets/FloatButton.coffee'
@@ -45,6 +46,14 @@ SIZE_CONST =
 
 CHINESE_WEEKDAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
+EMPTY_IMAGE_URL = './img/empty.png'
+TICK_IMAGE_URL = './img/tick.png'
+REPEAT_IMAGE_URL = './img/repeat.png'
+
+GREY = '#9da9ab'
+
+TICK_BORDER = '1px solid ' + GREY
+
 buildDateHTML = (datetime) ->
   "<div class='datetime'>" +
     "<div class='date' style='padding-top:#{SIZE_CONST.ITEM.DateTopPad}px;height:#{SIZE_CONST.ITEM.DateHeight}px;font-size:#{SIZE_CONST.FONT.Date}px;'>" +
@@ -54,14 +63,28 @@ buildDateHTML = (datetime) ->
   "</div>"
 
 buildCircleButton = (radius, isRepeated) ->
-  new Surface(
+  container = new ContainerSurface(
     size: [radius * 2, radius * 2]
     properties:
-      textAlign: 'center'
       borderRadius: radius + 'px'
-      border: '1px solid #9da9ab'
-      lineHeight: "#{radius * 2}px"
+      border: TICK_BORDER
   )
+
+  repeatSurface = new ImageSurface(
+    content: REPEAT_IMAGE_URL
+  )
+
+  if isRepeated then container.add repeatSurface
+
+  container.button = new ImageSurface(
+    content: EMPTY_IMAGE_URL
+    properties:
+      pointerEvents: 'none'
+  )
+
+  container.add(new Modifier(origin: [.5, .5], align: [.5, .5])).add container.button
+
+  return container
 
 buildItem = (memo, scroll) ->
   name = memo.get('name')
@@ -98,36 +121,30 @@ buildItem = (memo, scroll) ->
   buttonSection = new ContainerSurface(
     size: [SIZE_CONST.ITEM.ButtonSectionWidth, undefined]
   )
-  button = buildCircleButton SIZE_CONST.ITEM.ButtonRadius, isRepeated
+  buttonContainer = buildCircleButton SIZE_CONST.ITEM.ButtonRadius, isRepeated
   buttonSection.add(new Modifier(
     origin: [.5, .5]
     align: [.5, .5]
-  )).add button
+  )).add buttonContainer
 
   itemLayout.sequenceFrom [dateTimeSection, nameSection, buttonSection]
   itemWrapper.add itemLayout
   itemWrapper.pipe scroll
 
-  button.on 'click', ->
+  buttonContainer.on 'click', ->
     if isFinished
-      this.setContent('')
+      buttonContainer.button.setContent EMPTY_IMAGE_URL
       nameSection.setProperties(
         textDecoration: 'none'
         color: 'black'
       )
-
     else
-      this.setContent('√')
+      buttonContainer.button.setContent TICK_IMAGE_URL
       nameSection.setProperties(
         textDecoration: 'line-through'
-        color: '#888888'
+        color: GREY
       )
     isFinished = !isFinished
-
-
-
-
-
   itemWrapper
 
 # history memos
