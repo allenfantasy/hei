@@ -314,14 +314,12 @@ createFooter = ->
   cancelButton = new FlatButton(
     size: [window.innerWidth / 2, LINE_HEIGHT]
     content: '取消'
-    color: BLUE
     fontSize: FONT_SIZE
   )
 
   confirmButton = new FlatButton(
     size: [window.innerWidth / 2, LINE_HEIGHT]
     content: '确认'
-    color: BLUE
     fontSize: FONT_SIZE
   )
 
