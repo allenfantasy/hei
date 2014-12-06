@@ -14,8 +14,6 @@ class Memo extends Base
     obj = merge(Memo.DEFAULTS, obj or {})
     super obj
     @_localStorageName = Memo.STORAGE_NAME
-    # use timestamp as id
-    @set('id', new Date() - 0 + '') unless @get('id')
     return
 
   isRepeated: ->
