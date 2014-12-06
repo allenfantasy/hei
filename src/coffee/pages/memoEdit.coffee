@@ -7,10 +7,12 @@ ContainerSurface = require 'famous/surfaces/ContainerSurface'
 SequentialLayout = require 'famous/views/SequentialLayout'
 EventHandler = require 'famous/core/EventHandler'
 FlexibleLayout = require 'famous/views/FlexibleLayout'
+StateModifier = require 'famous/modifiers/StateModifier'
 
 Page = require '../lib/page.coffee'
 Slider = require '../lib/widgets/Slider.coffee'
 Memo = require '../models/Memo.coffee'
+FlatButton = require '../lib/widgets/FlatButton.coffee'
 
 require 'date-utils'
 
@@ -195,17 +197,18 @@ createDate = ->
   dateContainer.add(RIGHT_MODIFIER).add next
 
   MY_CENTER.on 'month', (value) ->
-    month = Math.round(value)
+    month = value
     if Date.validateDay(date.getDate(), date.getFullYear(), month)
       date.setMonth(month)
       dateSurface.setContent(generateDate(date))
+      MY_CENTER.emit('update:day', date.getDate())
     else
       date.setMonth(month)
       date.setDate(Date.getDaysInMonth(date.getFullYear(), month))
       dateSurface.setContent(generateDate(date))
 
   MY_CENTER.on 'day', (value) ->
-    day = Math.round(value)
+    day = value
     if Date.validateDay(day, date.getFullYear(), date.getMonth())
       date.setDate(day)
       dateSurface.setContent(generateDate(date))
@@ -233,12 +236,12 @@ createTime = ->
   )
 
   MY_CENTER.on 'hour', (value) ->
-    hours = Math.round(value)
+    hours = value
     date.setHours(hours)
     time.setContent(generateTime(date))
 
   MY_CENTER.on 'minute', (value) ->
-    minutes = Math.round(value)
+    minutes = value
     date.setMinutes(minutes)
     time.setContent(generateTime(date))
 
@@ -303,38 +306,32 @@ deactivateIcon = (icon, type, index) ->
   icon.setContent("./img/#{type}off#{index}.png")
 
 createFooter = ->
-  cancelButton = new Surface(
+  footer = new SequentialLayout(
+    size: [undefined, LINE_HEIGHT]
+    direction: 0
+  )
+
+  cancelButton = new FlatButton(
+    size: [window.innerWidth / 2, LINE_HEIGHT]
     content: '取消'
-    size: TRUE_SIZE
+    fontSize: FONT_SIZE
   )
 
-  confirmButton = new Surface(
+  confirmButton = new FlatButton(
+    size: [window.innerWidth / 2, LINE_HEIGHT]
     content: '确认'
-    size : TRUE_SIZE
-    properties:
-      textAlign: 'center'
+    fontSize: FONT_SIZE
   )
 
-  footer = new ContainerSurface(
-    size: [window.innerWidth, LINE_HEIGHT]
-    properties:
-      fontSize: FONT_SIZE
-  )
+  footer.sequenceFrom [
+    cancelButton
+    confirmButton
+  ]
 
-  footer.add(new Modifier(
-    align: [0.25, 0.5]
-    origin: [0.5, 0.5]
-  )).add(cancelButton)
-
-  footer.add(new Modifier(
-    align: [0.75, 0.5]
-    origin: [0.5, 0.5]
-  )).add(confirmButton)
-
-  cancelButton.on 'click', ->
+  cancelButton.click ->
     page.jumpTo 'memoIndex' # do nothing
 
-  confirmButton.on 'click', ->
+  confirmButton.click ->
     if alarmToggle
       attr =
         name: name
@@ -379,7 +376,7 @@ dateLayoutItems = [
 dateLayout.sequenceFrom dateLayoutItems
 
 dateLayoutContainer = new ContainerSurface(
-  size: [undefined, undefined]
+  size: [undefined, undefined] # for flexible
   properties:
     overflow: 'hidden'
 )
