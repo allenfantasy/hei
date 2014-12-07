@@ -30,6 +30,46 @@ class Memo extends Base
     else
       false
 
+  isFinished: ->
+    if @_data['finished'] then true else false
+
+  finish: (options) ->
+    if @isRepeated()
+      repeatCycle = @get('repeated')
+      originDate = @get('date')
+      newDate = new Date(originDate.getTime())
+      # set newDate based on Memo object's repeated attr
+      switch repeatCycle
+        when "day"
+          newDate.setDate(newDate.getDate() + 1)
+        when "week"
+          newDate.setDate(newDate.getDate() + 7)
+        when "month"
+          newDate.setMonth(newDate.getMonth() + 1)
+        when "year"
+          newDate.setFullYear(newDate.getFullYear() + 1)
+        else
+          window.alert("something wrong in Memo#finish!")
+      @set 'date', newDate
+      @_center.emit 'repeat', newDate
+    else
+      attrs =
+        finished: true
+
+      $ = @
+      options.success = ->
+        $._center.emit 'finish'
+      @save attrs, options
+
+  unfinish: (options) ->
+    attrs =
+      finished: false
+
+    $ = @
+    options.success = ->
+      $._center.emit 'unfinish'
+    @save attrs, options
+
   isEqual: (other) ->
     @get('id') is other.get('id')
 
@@ -38,6 +78,7 @@ Memo.DEFAULTS =
   date: null
   hasTime: false
   repeated: false
+  finished: false
   alarm: [false, false, false, false, false]
 
 Memo.REPEATED_STATE = [
