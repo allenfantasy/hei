@@ -64,6 +64,7 @@ buildCircleButton = (radius, isRepeated) ->
 buildItem = (memo, scroll) ->
   name = memo.get('name')
   datetime = memo.get('date')
+  hasTime = memo.get('hasTime')
   isRepeated = memo.isRepeated()
   itemWrapper = new ContainerSurface(
     size: [undefined, SIZE_CONST.ITEM.NetHeight + SIZE_CONST.ITEM.BorderWidth]
@@ -77,7 +78,7 @@ buildItem = (memo, scroll) ->
   )
 
   dateTimeSection = new Surface(
-    content: if (datetime && datetime.getDate) then buildDateHTML datetime else ''
+    content: if (hasTime and datetime and datetime.getDate) then buildDateHTML datetime else ''
     size: [SIZE_CONST.ITEM.DateSectionWidth, undefined]
   )
   nameSection = new Surface(
@@ -90,7 +91,8 @@ buildItem = (memo, scroll) ->
   )
 
   nameSection.on 'click', ->
-    page.jumpTo 'editMemo', memo 
+    console.log memo
+    page.jumpTo 'editMemo', memo
 
   buttonSection = new ContainerSurface(
     size: [SIZE_CONST.ITEM.ButtonSectionWidth, undefined]

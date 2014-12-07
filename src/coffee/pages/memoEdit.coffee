@@ -283,8 +283,8 @@ createFive = (type) ->
         else
           deactivateIcon reminder, type, index
           alarm[index] = false
-
         #console.log alarm
+
       if type is 'repeat'
         activeIdx = repeatStateIndex
 
@@ -296,6 +296,19 @@ createFive = (type) ->
           deactivateIcon reminder, type, index
           repeatStateIndex = -1
         #console.log repeatStateIndex
+
+  MY_CENTER.on "update:#{type}", (state) ->
+    if type is 'alarm'
+      state.forEach (item, index) ->
+        if item
+          activateIcon reminders[index], type, index
+        else
+          deactivateIcon reminders[index], type, index
+    else
+      for index in [0...4]
+        deactivateIcon reminders[index], type, index
+      if state isnt -1
+        activateIcon reminders[state], type, state
 
   return fiveContainer
 
@@ -401,10 +414,13 @@ page.onEvent 'beforeEnter', (memo) ->
   else # ==> NEW
     page.memo = new Memo()
 
-  memo = memo || page.memo
-  name = memo.get('name')
-  hasTime = memo.get('hasTime')
-  date = memo.get('date') || new Date()
+  memo = memo or page.memo
+  name = memo.get 'name'
+  hasTime = memo.get 'hasTime'
+  alarm = memo.get 'alarm'
+  repeatStateIndex = Memo.REPEATED_STATE.indexOf memo.get 'repeated'
+  date = memo.get('date') or new Date()
+
   dateObj =
     month: date.getMonth()
     day: date.getDate()
@@ -415,6 +431,8 @@ page.onEvent 'beforeEnter', (memo) ->
   MY_CENTER.emit 'update:switcher', hasTime
   MY_CENTER.emit 'update:date', date
   MY_CENTER.emit 'update:time', date
+  MY_CENTER.emit 'update:repeat', repeatStateIndex
+  MY_CENTER.emit 'update:alarm', alarm
 
   ['month', 'day', 'hour', 'minute'].forEach (type) ->
     MY_CENTER.emit "update:#{type}", dateObj[type]
