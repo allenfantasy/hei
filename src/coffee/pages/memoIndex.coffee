@@ -89,6 +89,7 @@ buildCircleButton = (radius, isRepeated) ->
 buildItem = (memo, scroll) ->
   name = memo.get('name')
   datetime = memo.get('date')
+  hasTime = memo.get('hasTime')
   isRepeated = memo.isRepeated()
   isFinished = false
   itemWrapper = new ContainerSurface(
@@ -103,7 +104,7 @@ buildItem = (memo, scroll) ->
   )
 
   dateTimeSection = new Surface(
-    content: if (datetime && datetime.getDate) then buildDateHTML datetime else ''
+    content: if (hasTime and datetime and datetime.getDate) then buildDateHTML datetime else ''
     size: [SIZE_CONST.ITEM.DateSectionWidth, undefined]
   )
   nameSection = new Surface(

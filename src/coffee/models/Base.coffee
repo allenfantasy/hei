@@ -17,6 +17,8 @@ class Base
     #  @_name = options.localStorage
 
   get: (key) ->
+    if @_data[key] and @_data[key].constructor is Array
+      return @_data[key].slice()
     @_data[key]
 
   set: (key, value) ->
