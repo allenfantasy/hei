@@ -30,6 +30,27 @@ class Memo extends Base
     else
       false
 
+  isFinished: ->
+    if @_data['finished'] then true else false
+
+  finish: (options) ->
+    attrs =
+      finished: true
+
+    $ = @
+    options.success = ->
+      $._center.emit 'finish'
+    @save attrs, options
+
+  unfinish: (options) ->
+    attrs =
+      finished: false
+
+    $ = @
+    options.success = ->
+      $._center.emit 'unfinish'
+    @save attrs, options
+
   isEqual: (other) ->
     @get('id') is other.get('id')
 

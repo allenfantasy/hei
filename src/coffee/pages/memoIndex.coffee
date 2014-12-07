@@ -62,7 +62,7 @@ buildDateHTML = (datetime) ->
     "<div class='time' style='height:#{SIZE_CONST.FONT.Time}px;font-size:#{SIZE_CONST.FONT.Time}px;'>" + util.formatTime(datetime) + "</div>" +
   "</div>"
 
-buildCircleButton = (radius, isRepeated) ->
+buildCircleButton = (radius, isRepeated, isFinished) ->
   container = new ContainerSurface(
     size: [radius * 2, radius * 2]
     properties:
@@ -77,7 +77,7 @@ buildCircleButton = (radius, isRepeated) ->
   if isRepeated then container.add repeatSurface
 
   container.button = new ImageSurface(
-    content: EMPTY_IMAGE_URL
+    content: if isFinished then TICK_IMAGE_URL else EMPTY_IMAGE_URL
     properties:
       pointerEvents: 'none'
   )
@@ -91,7 +91,8 @@ buildItem = (memo, scroll) ->
   datetime = memo.get('date')
   hasTime = memo.get('hasTime')
   isRepeated = memo.isRepeated()
-  isFinished = false
+  isFinished = memo.isFinished()
+
   itemWrapper = new ContainerSurface(
     size: [undefined, SIZE_CONST.ITEM.NetHeight + SIZE_CONST.ITEM.BorderWidth]
     classes: if isRepeated then ['item', 'repeated'] else ['item']
@@ -114,6 +115,8 @@ buildItem = (memo, scroll) ->
       fontSize: SIZE_CONST.FONT.Name + 'px'
       lineHeight: SIZE_CONST.ITEM.NetHeight + 'px'
       paddingLeft: SIZE_CONST.ITEM.NameLeftPad + 'px'
+      textDecoration: if isFinished then 'line-through' else 'none'
+      color: if isFinished then GREY else 'black'
   )
 
   nameSection.on 'click', ->
@@ -122,7 +125,7 @@ buildItem = (memo, scroll) ->
   buttonSection = new ContainerSurface(
     size: [SIZE_CONST.ITEM.ButtonSectionWidth, undefined]
   )
-  buttonContainer = buildCircleButton SIZE_CONST.ITEM.ButtonRadius, isRepeated
+  buttonContainer = buildCircleButton SIZE_CONST.ITEM.ButtonRadius, isRepeated, isFinished
   buttonSection.add(new Modifier(
     origin: [.5, .5]
     align: [.5, .5]
@@ -133,19 +136,31 @@ buildItem = (memo, scroll) ->
   itemWrapper.pipe scroll
 
   buttonContainer.on 'click', ->
-    if isFinished
-      buttonContainer.button.setContent EMPTY_IMAGE_URL
-      nameSection.setProperties(
-        textDecoration: 'none'
-        color: 'black'
+    if memo.isFinished()
+      memo.unfinish(
+        error: ->
+          window.alert "fail to unfinished!"
       )
     else
-      buttonContainer.button.setContent TICK_IMAGE_URL
-      nameSection.setProperties(
-        textDecoration: 'line-through'
-        color: GREY
+      memo.finish(
+        error: ->
+          window.alert "fail to finished!"
       )
-    isFinished = !isFinished
+
+  memo.on 'finish', ->
+    buttonContainer.button.setContent TICK_IMAGE_URL
+    nameSection.setProperties(
+      textDecoration: 'line-through'
+      color: GREY
+    )
+
+  memo.on 'unfinish', ->
+    buttonContainer.button.setContent EMPTY_IMAGE_URL
+    nameSection.setProperties(
+      textDecoration: 'none'
+      color: 'black'
+    )
+
   itemWrapper
 
 # history memos
@@ -199,8 +214,6 @@ container.add addButtonMod
 page.add container
 
 page.onEvent 'beforeEnter', (memo) ->
-  #console.log memos
-  #console.log memo
   if memo and memo.isRepeated # duck typing
     idx = memos.map((m) ->
       m.get('id')
