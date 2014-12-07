@@ -83,7 +83,8 @@ class Base
   on: (eventName, fn, thisObj) ->
     __this = this
     @_center.on eventName, (data) ->
-      fn.apply thisObj or this, [__this].concat(data)
+      #fn.apply thisObj or this, [__this].concat(data)
+      fn.apply thisObj or this, [data]
       return
 
     return

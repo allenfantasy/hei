@@ -161,6 +161,9 @@ buildItem = (memo, scroll) ->
       color: 'black'
     )
 
+  memo.on 'repeat', (d) ->
+    dateTimeSection.setContent buildDateHTML(d)
+
   itemWrapper
 
 # history memos
