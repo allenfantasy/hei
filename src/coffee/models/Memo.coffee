@@ -25,7 +25,10 @@ class Memo extends Base
     return
 
   isRepeated: ->
-    if @_data['hasTime'] && @_data['repeated'] then true else false
+    if @_data['hasTime']
+      if @_data['repeated'] and @_data['repeated'] isnt 'no' then true else false
+    else
+      false
 
   isEqual: (other) ->
     @get('id') is other.get('id')
