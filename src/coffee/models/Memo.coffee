@@ -38,9 +38,11 @@ class Memo extends Base
 
   validate: (cb, options) ->
     return true unless options.validate
+    console.log @get('name')
     if @get('name')
       true
     else
+      @set options.backup
       cb new Error('请填写备忘内容！')
       false
 

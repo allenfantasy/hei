@@ -1,6 +1,5 @@
 EventHandler = require 'famous/core/EventHandler'
 
-# TODO: delete
 class Base
   constructor: (obj) ->
     @_data = obj or {}
@@ -49,6 +48,7 @@ class Base
 
     return
 
+  # remove keys
   remove: (key) ->
     return unless @_data.hasOwnProperty(key)
     val = @_data[key]
@@ -112,7 +112,9 @@ class Base
   # Override this to validate
   validate: (cb, options) ->
     return true unless options.validate
-    # TODO: execute cb function if failed
+    # if failed:
+    # 1. execute cb function
+    # 2. set backup data
     # cb should like this: function(err) { // .... }
     true
 
@@ -121,8 +123,10 @@ class Base
 
     success = options.success
     error = options.error || null
+    backup = @_clone @getData()
+    options.backup = backup
+    @set obj
     if @validate(error, options)
-      @set obj
       method = if @isNew() then 'create' else 'update'
       # save to localStorage
       @set('id', new Date() - 0 + '') if method is 'create' # use timestamp as id, set when created (like Rails)
@@ -151,12 +155,25 @@ class Base
     window.localStorage.setItem(name, JSON.stringify(newRecords))
     return
 
+  # remove self from persistency
+  destroy: (success, error) ->
+    name = @_localStorageName
+    records = JSON.parse(window.localStorage.getItem(name) or '[]')
+    index = records.map((record) ->
+      record.id
+    ).indexOf @id()
+    if index is -1
+      error new Error('删除失败!')
+    else
+      records.splice(index, 1)
+      window.localStorage.setItem(name, JSON.stringify(records))
+      success() if success
+
   _clone: (obj) ->
     return obj if obj is null or typeof obj isnt "object"
     copy = obj.constructor()
     for attr of obj
       copy[attr] = obj[attr] if obj.hasOwnProperty(attr)
     copy
-
 
 module.exports = Base

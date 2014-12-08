@@ -13,12 +13,14 @@ mainContext = Engine.createContext()
 
 # your app here
 app = new App()
+dragScrollPage = require './pages/dragScroll.coffee'
 indexPage = require './pages/memoIndex.coffee'
 editPage = require './pages/memoEdit.coffee'
 sliderPage = require './pages/slider.coffee'
 
 mainContext.add app
 
+#app.registerPage dragScrollPage
 app.registerPage indexPage
 app.registerPage editPage
 #app.registerPage sliderPage

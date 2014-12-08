@@ -1,10 +1,14 @@
 Modifier = require 'famous/core/Modifier'
 Transform = require 'famous/core/Transform'
 Surface = require 'famous/core/Surface'
+RenderNode = require 'famous/core/RenderNode'
 ContainerSurface = require 'famous/surfaces/ContainerSurface'
+ImageSurface = require 'famous/surfaces/ImageSurface'
 Scrollview = require 'famous/views/Scrollview'
 FlexibleLayout = require 'famous/views/FlexibleLayout'
-ImageSurface = require 'famous/surfaces/ImageSurface'
+Draggable = require 'famous/modifiers/Draggable'
+Transitionable = require 'famous/transitions/Transitionable'
+SnapTransition = require 'famous/transitions/SnapTransition'
 
 Page = require '../lib/page.coffee'
 FloatButton = require '../lib/widgets/FloatButton.coffee'
@@ -164,14 +168,37 @@ buildItem = (memo, scroll) ->
   memo.on 'repeat', (d) ->
     dateTimeSection.setContent buildDateHTML(d)
 
-  itemWrapper
+  do ->
+    draggable = new Draggable(
+      xRange: [0 - window.innerWidth, 0]
+      yRange: [0, 0]
+    )
+    node = new RenderNode(draggable)
+    node.add itemWrapper
+    node.memo = memo
+    itemWrapper.pipe draggable
+    draggable.on 'end', (e) ->
+      if Math.abs(e.position[0]*2) > window.innerWidth
+        @setPosition [0 - window.innerWidth, 0, 0], { duration: 300, curve: 'easeOut' }, ->
+          i = memoRenderItems.indexOf(node)
+          console.log i
+          success = ->
+            memoRenderItems.splice(i, 1)
+            return
+
+          item = memoRenderItems[i]
+          item.memo.destroy success, (err) ->
+            window.alert(err.message)
+            return
+      else
+        @setPosition [0, 0, 0], trans
+
+    node
 
 # history memos
 memos = JSON.parse(window.localStorage.getItem(Memo.STORAGE_NAME) or '[]').map (data) ->
   data.date = new Date(data.date)
   new Memo data
-  #memo = new Memo data
-  #memo
 
 page = new Page(
   name: 'memoIndex'
@@ -184,6 +211,12 @@ container = new ContainerSurface(
 )
 
 memoList = new Scrollview()
+
+trans =
+  method: 'snap'
+  period: 300
+  dampingRatio: 0.3
+  velocity: 0
 
 memoRenderItems = memos.map (memo, index) ->
   buildItem memo, memoList
