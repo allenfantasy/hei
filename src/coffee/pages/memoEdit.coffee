@@ -350,6 +350,16 @@ createFooter = ->
     confirmButton
   ]
 
+  MY_CENTER.on 'update:pointerEvents', ->
+    setPointerEvents confirmButton, 'auto'
+    setPointerEvents cancelButton, 'auto'
+
+  cancelButton.onEvent 'beforeClick', ->
+    setPointerEvents confirmButton, 'none'
+
+  confirmButton.onEvent 'beforeClick', ->
+    setPointerEvents cancelButton, 'none'
+
   cancelButton.click ->
     page.jumpTo 'memoIndex' # do nothing
 
@@ -374,9 +384,15 @@ createFooter = ->
         page.jumpTo 'memoIndex', memo
       error: (err) ->
         window.alert err.message
+        setPointerEvents cancelButton, 'auto'
     )
 
   return footer
+
+setPointerEvents = (button, pointer) ->
+  button.setPointerEvents(
+    pointerEvents: pointer
+  )
 
 dateLayout = new SequentialLayout(
   direction: 1
@@ -445,6 +461,7 @@ page.onEvent 'beforeEnter', (memo) ->
   MY_CENTER.emit 'update:time', date
   MY_CENTER.emit 'update:repeat', repeatStateIndex
   MY_CENTER.emit 'update:alarm', alarm
+  MY_CENTER.emit 'update:pointerEvents'
 
   ['month', 'day', 'hour', 'minute'].forEach (type) ->
     MY_CENTER.emit "update:#{type}", dateObj[type]
