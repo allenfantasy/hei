@@ -175,7 +175,6 @@ createTriangle = (direction) ->
     triangle.setProperties(
       borderLeft: '20px solid' + GREY
     )
-
   triangle
 
 createDate = ->
