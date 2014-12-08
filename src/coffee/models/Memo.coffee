@@ -25,18 +25,29 @@ class Memo extends Base
     return
 
   isRepeated: ->
-    if @_data['hasTime']
-      if @_data['repeated'] and @_data['repeated'] isnt 'no' then true else false
+    if @hasTime
+      if @get('repeated') and @get('repeated') isnt 'no' then true else false
     else
       false
 
   isFinished: ->
-    if @_data['finished'] then true else false
+    if @get('finished') then true else false
+
+  hasTime: ->
+    @get 'hasTime'
+
+  validate: (cb, options) ->
+    return true unless options.validate
+    if @get('name')
+      true
+    else
+      cb new Error('请填写备忘内容！')
+      false
 
   finish: (options) ->
     if @isRepeated()
-      repeatCycle = @get('repeated')
-      originDate = @get('date')
+      repeatCycle = @get 'repeated'
+      originDate = @get 'date'
       newDate = new Date(originDate.getTime())
       # set newDate based on Memo object's repeated attr
       switch repeatCycle

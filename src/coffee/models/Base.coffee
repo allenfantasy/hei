@@ -108,7 +108,8 @@ class Base
   isNew: ->
     not @has 'id'
 
-  # `cb` would be called when validation failed
+  # `cb` should be called when validation failed
+  # Override this to validate
   validate: (cb, options) ->
     return true unless options.validate
     # TODO: execute cb function if failed
@@ -124,7 +125,7 @@ class Base
       @set obj
       method = if @isNew() then 'create' else 'update'
       # save to localStorage
-      @set('id', new Date() - 0 + '') if @isNew() # use timestamp as id, set when created (like Rails)
+      @set('id', new Date() - 0 + '') if method is 'create' # use timestamp as id, set when created (like Rails)
       @sync method, this, options
       # NOTE: if failed ... should unset 'id' attribute
       success(this)

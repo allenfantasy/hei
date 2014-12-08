@@ -363,9 +363,8 @@ createFooter = ->
       validate: true
       success: (memo) ->
         page.jumpTo 'memoIndex', memo
-      error: ->
-        # TODO
-        window.alert 'something fucked up'
+      error: (err) ->
+        window.alert err.message
     )
 
   return footer
