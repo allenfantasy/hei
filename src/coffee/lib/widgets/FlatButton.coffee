@@ -76,10 +76,8 @@ FlatButton::click = (handler) ->
     y = - $.size[1] / 2 + e.offsetY
     scale = $.size[0] / $._ink_size
     $._inkModifier.setTransform Transform.translate(x, y, 0)
-    $._inkModifier.setTransform Transform.scale(scale, scale, 0), {duration: 550, curve: 'outQuart'}, handler
-    Timer.after (->
-      $._button.setProperties(
-        backgroundColor: 'white'
-    )), 20
+    $._inkModifier.setTransform Transform.scale(scale, scale, 0), {duration: 550, curve: 'outQuart'}, ->
+      $._inkModifier.setTransform Transform.scale(0, 0, 0)
+      handler()
 
 module.exports = FlatButton
