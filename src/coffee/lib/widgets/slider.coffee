@@ -39,6 +39,12 @@ Slider = (barSize, thumbRadius, valueRange, step, initValue, barColor, thumbColo
       backgroundColor: barColor
   )
 
+  $ = @
+  @_bar.on 'click', (e) ->
+    val = Math.round p2v($._p, $._v, e.offsetX)
+    $.setValue val
+    $._draggable.eventOutput.emit 'end', position: $._draggable.getPosition()
+
   @_thumb.pipe @_draggable
 
   @_draggable.setPosition [v2p(@_p, @_v, initValue), 0]

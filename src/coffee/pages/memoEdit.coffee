@@ -60,7 +60,7 @@ BAR_WIDTH = 0.9 * window.innerWidth
 MONTH_STEP = BAR_WIDTH / 11
 DAY_STEP = BAR_WIDTH / 30
 HOUR_STEP = BAR_WIDTH / 23
-MINUTE_STEP = BAR_WIDTH / 59
+MINUTE_STEP = BAR_WIDTH / 11
 
 SWITCHON_IMAGE_URL = './img/switch_on.png'
 SWITCHOFF_IMAGE_URL = './img/switch_off.png'
@@ -74,11 +74,16 @@ WEEKS =
   Sat: '周六'
   Sun: '周日'
 
+defaultDate = ->
+  date = new Date()
+  date.setSeconds(0)
+  date.setMinutes Math.round(date.getMinutes() % 5) * 5
+  date
+
 page.memo = new Memo()  # this is the default one
 
 name = ''
-date = new Date()
-date.setSeconds(0)
+date = defaultDate()
 alarm = [false, false, false, false, false]
 repeatStateIndex = -1 # store the index of active repeat icon
 
@@ -384,7 +389,7 @@ dateLayoutItems = [
   createSlide 'day', [1, 31], DAY_STEP, date.getDate()
   createSlide 'hour', [0, 23], HOUR_STEP, date.getHours()
   createTime()
-  createSlide 'minute', [0, 59], MINUTE_STEP, date.getMinutes()
+  createSlide 'minute', [0, 55], MINUTE_STEP, date.getMinutes()
   createFive 'alarm'
   createFive 'repeat'
 ]
@@ -426,7 +431,7 @@ page.onEvent 'beforeEnter', (memo) ->
   hasTime = memo.get 'hasTime'
   alarm = memo.get 'alarm'
   repeatStateIndex = Memo.REPEATED_STATE.indexOf memo.get 'repeated'
-  date = memo.get('date') or new Date()
+  date = memo.get('date') or defaultDate()
 
   dateObj =
     month: date.getMonth()
