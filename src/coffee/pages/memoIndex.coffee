@@ -30,7 +30,7 @@ SIZE_CONST =
     DateSectionWidth: 146 * WIDTH_RATIO
     NameLeftPad: 40 * WIDTH_RATIO
     BorderWidth: 2
-    ButtonSectionWidth: 90 * WIDTH_RATIO
+    ButtonSectionWidth: 120 * WIDTH_RATIO
     ButtonRadius: 27 * WIDTH_RATIO
 
   FONT:
@@ -135,7 +135,7 @@ buildItem = (memo, scroll) ->
   itemWrapper.add itemLayout
   itemWrapper.pipe scroll
 
-  buttonContainer.on 'click', ->
+  buttonSection.on 'click', ->
     if memo.isFinished()
       memo.unfinish(
         error: ->

@@ -44,6 +44,11 @@ RIGHT_MODIFIER = new Modifier(
   origin: [1, 0.5]
 )
 
+BOTTOM_MODIFIER = new Modifier(
+  origin: [.5, 1]
+  align: [.5, 1]
+)
+
 SCREEN_SIZE = [720, 1280] # iphone5
 WIDTH_RATIO = window.innerWidth / SCREEN_SIZE[0]
 HEIGHT_RATIO = window.innerHeight / SCREEN_SIZE[1]
@@ -395,14 +400,18 @@ dateLayoutContainer = new ContainerSurface(
 dateLayoutContainer.add dateLayout
 
 layoutItems = [
-  createHeader(''),
-  dateLayoutContainer,
-  createFooter()
+  createHeader('')
+  dateLayoutContainer
+  new Surface() # placeholder
 ]
+
+footer = createFooter()
 
 layout.sequenceFrom layoutItems
 
-container.add(CENTER_MODIFIER).add layout
+#container.add(CENTER_MODIFIER).add layout
+container.add layout
+container.add(BOTTOM_MODIFIER).add footer
 
 page.add container
 
