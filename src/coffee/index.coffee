@@ -4,6 +4,10 @@ require './styles'
 # Load polyfills
 require 'famous-polyfills'
 
+# import FastClick
+attachFastClick = require 'fastclick'
+attachFastClick document.body
+
 # import dependencies
 Engine = require 'famous/core/Engine'
 App = require './lib/app.coffee'
