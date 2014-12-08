@@ -173,13 +173,19 @@ createDate = ->
   )
 
   last = new Surface(
-    content: '◀'
     size: TRUE_SIZE
+    properties:
+      borderTop: "10px solid transparent"
+      borderBottom: "10px solid transparent"
+      borderRight: "20px solid " + GREY
   )
 
   next = new Surface(
-    content: '▶'
     size: TRUE_SIZE
+    properties:
+      borderTop: "10px solid transparent"
+      borderBottom: "10px solid transparent"
+      borderLeft: "20px solid " + GREY
   )
 
   last.on 'click', ->
