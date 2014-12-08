@@ -103,7 +103,6 @@ createHeader = () ->
     placeholder: '请输入名称'
     type: 'text'
     properties:
-      lineHeight: LINE_HEIGHT + 'px'
       fontSize: FONT_SIZE
   )
 
