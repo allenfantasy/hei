@@ -57,6 +57,9 @@ DAY_STEP = BAR_WIDTH / 30
 HOUR_STEP = BAR_WIDTH / 23
 MINUTE_STEP = BAR_WIDTH / 59
 
+TRIANGLE_TRANSPARENT_BORDER = "10px solid transparent"
+TRIANGLE_GREY_BORDER = "20px solid " + GREY
+
 SWITCHON_IMAGE_URL = './img/switch_on.png'
 SWITCHOFF_IMAGE_URL = './img/switch_off.png'
 
@@ -163,18 +166,19 @@ createTriangle = (direction) ->
   triangle = new Surface(
     size: TRUE_SIZE
     properties:
-      borderTop: "10px solid transparent"
-      borderBottom: "10px solid transparent"
+      borderTop: TRIANGLE_TRANSPARENT_BORDER
+      borderBottom: TRIANGLE_TRANSPARENT_BORDER
   )
 
   if direction is 'left'
     triangle.setProperties(
-      borderRight: '20px solid' + GREY
+      borderRight: TRIANGLE_GREY_BORDER
     )
   else
     triangle.setProperties(
-      borderLeft: '20px solid' + GREY
+      borderLeft: TRIANGLE_GREY_BORDER
     )
+
   triangle
 
 createDate = ->

@@ -21,4 +21,4 @@ mainContext.add app
 
 app.registerPage indexPage
 app.registerPage editPage
-# app.registerPage sliderPage
+#app.registerPage sliderPage
