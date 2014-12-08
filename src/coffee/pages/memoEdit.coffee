@@ -159,6 +159,25 @@ createSlide = (type, range, step, initial) ->
 
   return slideContainer
 
+createTriangle = (direction) ->
+  triangle = new Surface(
+    size: TRUE_SIZE
+    properties:
+      borderTop: "10px solid transparent"
+      borderBottom: "10px solid transparent"
+  )
+
+  if direction is 'left'
+    triangle.setProperties(
+      borderRight: '20px solid' + GREY
+    )
+  else
+    triangle.setProperties(
+      borderLeft: '20px solid' + GREY
+    )
+
+  triangle
+
 createDate = ->
   dateContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
@@ -172,35 +191,22 @@ createDate = ->
     size: TRUE_SIZE
   )
 
-  last = new Surface(
-    size: TRUE_SIZE
-    properties:
-      borderTop: "10px solid transparent"
-      borderBottom: "10px solid transparent"
-      borderRight: "20px solid " + GREY
-  )
+  lastYearTriangle = createTriangle 'left'
+  nextYearTriangle = createTriangle 'right'
 
-  next = new Surface(
-    size: TRUE_SIZE
-    properties:
-      borderTop: "10px solid transparent"
-      borderBottom: "10px solid transparent"
-      borderLeft: "20px solid " + GREY
-  )
-
-  last.on 'click', ->
+  lastYearTriangle.on 'click', ->
     date.addYears(-1)
     dateSurface.setContent(generateDate(date))
 
-  next.on 'click', ->
+  nextYearTriangle.on 'click', ->
     date.addYears(1)
     dateSurface.setContent(generateDate(date))
 
-  dateContainer.add(LEFT_MODIFIER).add last
+  dateContainer.add(LEFT_MODIFIER).add lastYearTriangle
 
   dateContainer.add(CENTER_MODIFIER).add dateSurface
 
-  dateContainer.add(RIGHT_MODIFIER).add next
+  dateContainer.add(RIGHT_MODIFIER).add nextYearTriangle
 
   MY_CENTER.on 'month', (value) ->
     month = value
