@@ -62,6 +62,9 @@ DAY_STEP = BAR_WIDTH / 30
 HOUR_STEP = BAR_WIDTH / 23
 MINUTE_STEP = BAR_WIDTH / 11
 
+TRIANGLE_TRANSPARENT_BORDER = "10px solid transparent"
+TRIANGLE_GREY_BORDER = "20px solid " + GREY
+
 SWITCHON_IMAGE_URL = './img/switch_on.png'
 SWITCHOFF_IMAGE_URL = './img/switch_off.png'
 
@@ -168,6 +171,25 @@ createSlide = (type, range, step, initial) ->
 
   return slideContainer
 
+createTriangle = (direction) ->
+  triangle = new Surface(
+    size: TRUE_SIZE
+    properties:
+      borderTop: TRIANGLE_TRANSPARENT_BORDER
+      borderBottom: TRIANGLE_TRANSPARENT_BORDER
+  )
+
+  if direction is 'left'
+    triangle.setProperties(
+      borderRight: TRIANGLE_GREY_BORDER
+    )
+  else
+    triangle.setProperties(
+      borderLeft: TRIANGLE_GREY_BORDER
+    )
+
+  triangle
+
 createDate = ->
   dateContainer = new ContainerSurface(
     size: [window.innerWidth, LINE_HEIGHT]
@@ -181,29 +203,22 @@ createDate = ->
     size: TRUE_SIZE
   )
 
-  last = new Surface(
-    content: '◀'
-    size: TRUE_SIZE
-  )
+  lastYearTriangle = createTriangle 'left'
+  nextYearTriangle = createTriangle 'right'
 
-  next = new Surface(
-    content: '▶'
-    size: TRUE_SIZE
-  )
-
-  last.on 'click', ->
+  lastYearTriangle.on 'click', ->
     date.addYears(-1)
     dateSurface.setContent(generateDate(date))
 
-  next.on 'click', ->
+  nextYearTriangle.on 'click', ->
     date.addYears(1)
     dateSurface.setContent(generateDate(date))
 
-  dateContainer.add(LEFT_MODIFIER).add last
+  dateContainer.add(LEFT_MODIFIER).add lastYearTriangle
 
   dateContainer.add(CENTER_MODIFIER).add dateSurface
 
-  dateContainer.add(RIGHT_MODIFIER).add next
+  dateContainer.add(RIGHT_MODIFIER).add nextYearTriangle
 
   MY_CENTER.on 'month', (value) ->
     month = value
