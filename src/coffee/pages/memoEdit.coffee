@@ -365,6 +365,16 @@ createFooter = ->
     confirmButton
   ]
 
+  MY_CENTER.on 'update:pointerEvents', ->
+    confirmButton.setPointerEvents 'auto'
+    cancelButton.setPointerEvents 'auto'
+
+  cancelButton.onEvent 'beforeClick', ->
+    confirmButton.setPointerEvents 'none'
+
+  confirmButton.onEvent 'beforeClick', ->
+    cancelButton.setPointerEvents 'none'
+
   cancelButton.click ->
     page.jumpTo 'memoIndex' # do nothing
 
@@ -389,6 +399,7 @@ createFooter = ->
         page.jumpTo 'memoIndex', memo
       error: (err) ->
         window.alert err.message
+        cancelButton.setPointerEvents 'auto'
     )
 
   return footer
@@ -460,6 +471,7 @@ page.onEvent 'beforeEnter', (memo) ->
   MY_CENTER.emit 'update:time', date
   MY_CENTER.emit 'update:repeat', repeatStateIndex
   MY_CENTER.emit 'update:alarm', alarm
+  MY_CENTER.emit 'update:pointerEvents'
 
   ['month', 'day', 'hour', 'minute'].forEach (type) ->
     MY_CENTER.emit "update:#{type}", dateObj[type]

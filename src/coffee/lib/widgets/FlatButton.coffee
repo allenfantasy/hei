@@ -6,6 +6,7 @@ Modifier = require 'famous/core/Modifier'
 Timer = require 'famous/utilities/Timer'
 Easing = require 'famous/transitions/Easing'
 TweenTransition = require 'famous/transitions/TweenTransition'
+EventHandler = require 'famous/core/EventHandler'
 
 TweenTransition.registerCurve 'outQuart', Easing.outQuart
 
@@ -21,6 +22,8 @@ CENTER_MODIFIER = new Modifier(
 
 FlatButton = (options) ->
   ContainerSurface.call @
+
+  @_center = new EventHandler()
 
   @size = options.size
   @_ink_size = options.inkSize or 50
@@ -68,7 +71,8 @@ FlatButton::elementType = 'flatbutton'
 
 FlatButton::click = (handler) ->
   $ = @
-  @.on 'click', (e) ->
+  @_button.on 'click', (e) ->
+    $._center.emit 'beforeClick'
     $._ink.setProperties(
       display: 'inline'
     )
@@ -79,5 +83,16 @@ FlatButton::click = (handler) ->
     $._inkModifier.setTransform Transform.scale(scale, scale, 0), {duration: 550, curve: 'outQuart'}, ->
       $._inkModifier.setTransform Transform.scale(0, 0, 0)
       handler()
+
+FlatButton::emitEvent = (event, data) ->
+  @_center.emit event, data
+
+FlatButton::onEvent = (type, handler) ->
+  @_center.on type, handler
+
+FlatButton::setPointerEvents = (pointer) ->
+  @_button.setProperties(
+    pointerEvents: pointer
+  )
 
 module.exports = FlatButton
