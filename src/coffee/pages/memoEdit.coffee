@@ -351,14 +351,14 @@ createFooter = ->
   ]
 
   MY_CENTER.on 'update:pointerEvents', ->
-    setPointerEvents confirmButton, 'auto'
-    setPointerEvents cancelButton, 'auto'
+    confirmButton.setPointerEvents 'auto'
+    cancelButton.setPointerEvents 'auto'
 
   cancelButton.onEvent 'beforeClick', ->
-    setPointerEvents confirmButton, 'none'
+    confirmButton.setPointerEvents 'none'
 
   confirmButton.onEvent 'beforeClick', ->
-    setPointerEvents cancelButton, 'none'
+    cancelButton.setPointerEvents 'none'
 
   cancelButton.click ->
     page.jumpTo 'memoIndex' # do nothing
@@ -384,15 +384,10 @@ createFooter = ->
         page.jumpTo 'memoIndex', memo
       error: (err) ->
         window.alert err.message
-        setPointerEvents cancelButton, 'auto'
+        cancelButton.setPointerEvents 'auto'
     )
 
   return footer
-
-setPointerEvents = (button, pointer) ->
-  button.setPointerEvents(
-    pointerEvents: pointer
-  )
 
 dateLayout = new SequentialLayout(
   direction: 1

@@ -90,7 +90,9 @@ FlatButton::emitEvent = (event, data) ->
 FlatButton::onEvent = (type, handler) ->
   @_center.on type, handler
 
-FlatButton::setPointerEvents = (options) ->
-  @_button.setProperties(options)
+FlatButton::setPointerEvents = (pointer) ->
+  @_button.setProperties(
+    pointerEvents: pointer
+  )
 
 module.exports = FlatButton
